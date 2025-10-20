@@ -1,0 +1,1228 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BKita - Bimbingan Konseling Online</title>
+    <!-- Supabase JS Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts - Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Modern Styling adjustments */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f7f9fb; /* Soft, modern background */
+        }
+        .container-bkita {
+            max-width: 900px;
+            /* Enhanced modern card style */
+            border-radius: 1.5rem; /* More rounded corners */
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); /* Deeper shadow */
+        }
+        .chat-container {
+            height: 400px;
+            overflow-y: auto;
+            border-radius: 0.75rem;
+        }
+        /* Custom styles for appointment slots */
+        .slot-available {
+            @apply bg-teal-500 hover:bg-teal-600 text-white; /* Teal/Cyan for primary action */
+        }
+        .slot-pending {
+            @apply bg-amber-400 text-gray-800 cursor-not-allowed;
+        }
+        .slot-approved {
+            @apply bg-indigo-500 text-white;
+        }
+        .slot-approved[disabled] {
+            @apply cursor-not-allowed opacity-75;
+        }
+        .modal {
+            @apply fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-40;
+        }
+        /* Style for the new modern logo */
+        .logo-bkita-container {
+             /* Ensure the logo is centered and sized correctly */
+        }
+        /* Simple loader */
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 4px solid #3498db;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            margin-left: -20px;
+            margin-top: -20px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4">
+    <div id="loading-overlay" class="fixed inset-0 bg-white z-50 flex items-center justify-center">
+        <div class="loader"></div>
+    </div>
+
+    <div id="app-container" class="container-bkita w-full bg-white p-8 md:p-12 hidden">
+        <!-- Main Login View -->
+        <div id="login-view" class="view">
+            <!-- New Modern Logo BKita (Abstract Support & Growth) -->
+            <div class="logo-bkita-container w-28 h-28 mx-auto mb-8">
+                <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="logoTitle">
+                    <title id="logoTitle">Logo BKita</title>
+                    <defs>
+                        <!-- Vibrant Gradient: Teal to Pink (for friendly, dynamic feel) -->
+                        <linearGradient id="gradBKita" x1="0" y1="0" x2="1" y2="1">
+                            <stop offset="0%" stop-color="#06b6d4"/>
+                            <stop offset="100%" stop-color="#ff7a9a"/>
+                        </linearGradient>
+                    </defs>
+                    <!-- Outer shape (soft rounded square with gradient) -->
+                    <rect x="0" y="0" width="100" height="100" rx="25" fill="url(#gradBKita)"/>
+                    
+                    <!-- Abstract Symbol: Two interlocking/overlapping shapes representing 'Bimbingan' (Guidance) and 'Kita' (Community/Support/Growth) -->
+                    <g fill="#ffffff" transform="translate(10, 10) scale(0.8)">
+                        <!-- Support Arch (Community/Kita) -->
+                        <path d="M 30 20 C 10 35 10 65 30 80 L 38 80 C 25 68 25 32 38 20 Z" />
+                        <!-- Inner Growth Path (Guidance/Bimbingan) -->
+                        <path d="M 50 30 L 75 30 L 75 40 L 58 40 L 58 60 L 75 60 L 75 70 L 50 70 L 50 60 L 60 50 L 50 40 L 50 30 Z" />
+                    </g>
+                </svg>
+            </div>
+            <h1 class="text-4xl font-extrabold text-center text-gray-800 mb-2">BKita</h1>
+            <p class="text-center text-gray-500 mb-10">Platform Bimbingan Konseling Digital Sekolah Anda</p>
+            <div class="space-y-4 max-w-sm mx-auto">
+                <button id="show-student-login-btn" class="w-full py-4 px-6 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg shadow-blue-200/50 transition-all duration-300 transform hover:scale-[1.01]">
+                    Masuk Sebagai Siswa
+                </button>
+                <button id="show-admin-login-btn" class="w-full py-4 px-6 bg-gray-700 hover:bg-gray-800 text-white font-bold rounded-xl shadow-lg shadow-gray-300/50 transition-all duration-300 transform hover:scale-[1.01]">
+                    Masuk Sebagai Guru BK
+                </button>
+                <button id="show-super-admin-login-btn" class="w-full mt-4 py-3 px-6 bg-red-700 hover:bg-red-800 text-white font-bold rounded-xl shadow-lg shadow-red-300/50 transition-all duration-300 transform hover:scale-[1.01]">
+                    Masuk Sebagai Super Admin
+                </button>
+            </div>
+        </div>
+
+        <!-- Student Login View -->
+        <div id="student-login-view" class="view hidden">
+            <h1 class="text-3xl font-bold text-center text-gray-800 mb-4">Masuk Siswa</h1>
+            <p class="text-center text-gray-600 mb-8">Masukkan nama dan password untuk akses ke layanan BK.</p>
+            <div class="space-y-4 max-w-sm mx-auto">
+                <input type="text" id="student-name-input" placeholder="Nama Anda (cth: Budi)" class="w-full p-4 rounded-xl border border-gray-200 focus:outline-none focus:ring-4 focus:ring-blue-100 transition-shadow">
+                <input type="password" id="student-password-input" placeholder="Password" class="w-full p-4 rounded-xl border border-gray-200 focus:outline-none focus:ring-4 focus:ring-blue-100 transition-shadow">
+                <button id="student-login-btn" class="w-full py-4 px-6 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-md transition-colors duration-300">
+                    Masuk
+                </button>
+                <button id="student-back-btn" class="w-full py-3 px-6 bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold rounded-xl transition-colors duration-300">
+                    Kembali
+                </button>
+            </div>
+        </div>
+
+        <!-- Admin Login View -->
+        <div id="admin-login-view" class="view hidden">
+            <h1 class="text-3xl font-bold text-center text-gray-800 mb-4">Masuk Guru BK</h1>
+            <p class="text-center text-gray-600 mb-8">Masukkan nama dan password Anda.</p>
+            <div class="space-y-4 max-w-sm mx-auto">
+                <input type="text" id="admin-name-input" placeholder="Nama Admin (Gofar/Rohman)" class="w-full p-4 rounded-xl border border-gray-200 focus:outline-none focus:ring-4 focus:ring-blue-100 transition-shadow">
+                <input type="password" id="admin-password" placeholder="Password" class="w-full p-4 rounded-xl border border-gray-200 focus:outline-none focus:ring-4 focus:ring-blue-100 transition-shadow">
+                <button id="admin-login-btn" class="w-full py-4 px-6 bg-gray-700 hover:bg-gray-800 text-white font-bold rounded-xl shadow-md transition-colors duration-300">
+                    Masuk
+                </button>
+                <button id="admin-back-btn-from-login" class="w-full py-3 px-6 bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold rounded-xl transition-colors duration-300">
+                    Kembali
+                </button>
+            </div>
+        </div>
+        
+        <!-- Super Admin Login View -->
+        <div id="super-admin-login-view" class="view hidden">
+            <h1 class="text-3xl font-bold text-center text-gray-800 mb-4">Masuk Super Admin</h1>
+            <p class="text-center text-gray-600 mb-8">Area ini hanya untuk Super Admin.</p>
+            <div class="space-y-4 max-w-sm mx-auto">
+                <input type="text" id="super-admin-name-input" placeholder="Nama Super Admin" class="w-full p-4 rounded-xl border border-gray-200 focus:outline-none focus:ring-4 focus:ring-red-100 transition-shadow">
+                <input type="password" id="super-admin-password" placeholder="Password" class="w-full p-4 rounded-xl border border-gray-200 focus:outline-none focus:ring-4 focus:ring-red-100 transition-shadow">
+                <button id="super-admin-login-btn" class="w-full py-4 px-6 bg-red-700 hover:bg-red-800 text-white font-bold rounded-xl shadow-md transition-colors duration-300">
+                    Masuk
+                </button>
+                <button id="super-admin-back-btn" class="w-full py-3 px-6 bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold rounded-xl transition-colors duration-300">
+                    Kembali
+                </button>
+            </div>
+        </div>
+
+        <!-- User Dashboard View -->
+        <div id="user-dashboard-view" class="view hidden">
+            <header class="flex flex-col md:flex-row justify-between items-start md:items-center pb-4 border-b border-gray-200 mb-6">
+                <h1 class="text-2xl font-bold text-gray-800 mb-2 md:mb-0">Selamat Datang, <span id="student-name-header" class="text-blue-600">Siswa</span>!</h1>
+                <button id="logout-btn" class="py-2 px-4 bg-red-500 hover:bg-red-600 text-white rounded-xl font-medium transition-colors duration-300 shadow-md">
+                    Keluar
+                </button>
+            </header>
+            
+            <!-- Tab Navigation (Pills style for modern look) -->
+            <div class="flex bg-gray-100 p-1 rounded-xl mb-8 overflow-x-auto">
+                <button id="tab-appointment" class="flex-1 py-2 px-4 whitespace-nowrap text-center text-sm font-semibold transition-all duration-300 rounded-lg bg-white shadow-sm text-blue-600">
+                    📅 Janji Temu
+                </button>
+                <button id="tab-chat" class="flex-1 py-2 px-4 whitespace-nowrap text-center text-sm font-medium focus:outline-none transition-all duration-300 text-gray-600 hover:bg-white hover:shadow-sm rounded-lg">
+                    💬 Chat Privat
+                </button>
+                <button id="tab-articles" class="flex-1 py-2 px-4 whitespace-nowrap text-center text-sm font-medium focus:outline-none transition-all duration-300 text-gray-600 hover:bg-white hover:shadow-sm rounded-lg">
+                    🧠 Materi Motivasi
+                </button>
+                 <button id="tab-change-password" class="flex-1 py-2 px-4 whitespace-nowrap text-center text-sm font-medium focus:outline-none transition-all duration-300 text-gray-600 hover:bg-white hover:shadow-sm rounded-lg">
+                    🔑 Ganti Password
+                </button>
+            </div>
+
+            <!-- Tab Content -->
+            <div id="tab-content">
+                <!-- Tab Janji Temu -->
+                <div id="content-appointment" class="tab-content">
+                    <h2 class="text-2xl font-extrabold mb-6 text-gray-800">Pilih Waktu Konseling</h2>
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <div class="p-6 bg-gray-50 rounded-xl border border-gray-100 shadow-lg col-span-1 lg:col-span-2">
+                            <h3 class="font-bold text-xl mb-4 text-gray-700">Jadwal Guru BK Hari Ini</h3>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <!-- Gofar Slots -->
+                                <div class="p-4 bg-white rounded-lg shadow-inner">
+                                    <h4 class="font-bold text-lg mb-3 border-b pb-2 text-teal-600">Bapak Gofar</h4>
+                                    <div id="gofar-slots" class="grid grid-cols-2 gap-2 text-sm">
+                                        <!-- Slots for Gofar will be rendered here -->
+                                    </div>
+                                </div>
+                                <!-- Rohman Slots -->
+                                <div class="p-4 bg-white rounded-lg shadow-inner">
+                                    <h4 class="font-bold text-lg mb-3 border-b pb-2 text-teal-600">Bapak Rohman</h4>
+                                    <div id="rohman-slots" class="grid grid-cols-2 gap-2 text-sm">
+                                        <!-- Slots for Rohman will be rendered here -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Status Appointment -->
+                        <div class="p-6 bg-white rounded-xl shadow-lg border-t-4 border-indigo-500">
+                            <h3 class="font-extrabold text-xl mb-4 text-indigo-700">Status Janji Temu Anda</h3>
+                            <div id="my-appointments" class="space-y-3">
+                                <!-- My appointments will be rendered here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab Chat Privat -->
+                <div id="content-chat" class="tab-content hidden">
+                    <div class="bg-indigo-50 rounded-xl p-8 shadow-xl">
+                        <h2 class="text-2xl font-extrabold mb-4 text-center text-indigo-800">Chat Privat via WhatsApp</h2>
+                        <p class="text-center text-gray-600 mb-8">Anda dapat langsung terhubung dengan guru BK untuk konsultasi cepat atau mendesak.</p>
+                        <div class="flex justify-center space-x-6">
+                            <a id="chat-gofar-btn" href="#" target="_blank" class="flex items-center py-3 px-6 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-xl transition-colors duration-300 shadow-lg shadow-green-200/50">
+                                🟢 Chat Gofar
+                            </a>
+                            <a id="chat-rohman-btn" href="#" target="_blank" class="flex items-center py-3 px-6 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-xl transition-colors duration-300 shadow-lg shadow-green-200/50">
+                                🟢 Chat Rohman
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab Materi Motivasi -->
+                <div id="content-articles" class="tab-content hidden">
+                    <h2 class="text-2xl font-extrabold mb-6 text-gray-800">Materi Pengembangan Diri & Inspirasi</h2>
+                    <div id="article-list" class="space-y-6">
+                        <!-- Articles will be rendered here -->
+                    </div>
+                </div>
+                
+                <!-- Tab Ganti Password -->
+                <div id="content-change-password" class="tab-content hidden">
+                    <h2 class="text-2xl font-extrabold mb-6 text-gray-800">Ganti Password Anda</h2>
+                    <div class="bg-gray-100 rounded-xl p-6 shadow-md space-y-4 max-w-md mx-auto">
+                        <input type="password" id="old-password-input" placeholder="Password Lama" class="w-full p-4 rounded-xl border border-gray-200 focus:outline-none focus:ring-4 focus:ring-blue-100 transition-shadow">
+                        <input type="password" id="new-password-input" placeholder="Password Baru (min. 4 karakter)" class="w-full p-4 rounded-xl border border-gray-200 focus:outline-none focus:ring-4 focus:ring-blue-100 transition-shadow">
+                        <input type="password" id="confirm-password-input" placeholder="Konfirmasi Password Baru" class="w-full p-4 rounded-xl border border-gray-200 focus:outline-none focus:ring-4 focus:ring-blue-100 transition-shadow">
+                        <button id="update-password-btn" class="w-full py-3 px-6 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-md transition-colors duration-300">
+                            Simpan Password Baru
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Admin Dashboard View -->
+        <div id="admin-dashboard-view" class="view hidden">
+            <header class="flex flex-col md:flex-row justify-between items-start md:items-center pb-4 border-b border-gray-200 mb-6">
+                <h1 class="text-2xl font-bold text-gray-800 mb-2 md:mb-0">Dasbor Guru BK <span id="admin-name-header" class="text-blue-600"></span></h1>
+                <button id="admin-logout-btn" class="py-2 px-4 bg-red-500 hover:bg-red-600 text-white rounded-xl font-medium transition-colors duration-300 shadow-md">
+                    Keluar
+                </button>
+            </header>
+            
+            <!-- Tab Navigation for Admin (Pills style) - Kelola Akun REMOVED -->
+            <div class="flex bg-gray-100 p-1 rounded-xl mb-8 overflow-x-auto">
+                <button id="admin-tab-appointments" class="flex-1 py-2 px-4 whitespace-nowrap text-center text-sm font-semibold transition-all duration-300 rounded-lg bg-white shadow-sm text-blue-600">
+                    🛎️ Permintaan Janji Temu
+                </button>
+                <button id="admin-tab-add-article" class="flex-1 py-2 px-4 whitespace-nowrap text-center text-sm font-medium focus:outline-none transition-all duration-300 text-gray-600 hover:bg-white hover:shadow-sm rounded-lg">
+                    ✍️ Tambah Materi
+                </button>
+                <button id="admin-tab-change-password" class="flex-1 py-2 px-4 whitespace-nowrap text-center text-sm font-medium focus:outline-none transition-all duration-300 text-gray-600 hover:bg-white hover:shadow-sm rounded-lg">
+                    🔑 Ganti Password
+                </button>
+            </div>
+
+            <!-- Tab Content for Admin -->
+            <div id="admin-tab-content">
+                <!-- Admin Tab Janji Temu -->
+                <div id="admin-content-appointments" class="tab-content">
+                    <h2 class="text-2xl font-extrabold mb-6 text-gray-800">Kelola Permintaan Janji Temu Berdasarkan Kategori</h2>
+                    <div id="admin-appointment-list" class="space-y-4">
+                        <!-- Appointment requests will be rendered here grouped by category -->
+                    </div>
+                </div>
+
+                <!-- Admin Tab Tambah Materi -->
+                <div id="admin-content-add-article" class="tab-content hidden">
+                    <h2 class="text-2xl font-extrabold mb-6 text-gray-800">Tulis Materi Motivasi Baru</h2>
+                    <div class="bg-gray-100 rounded-xl p-6 shadow-md space-y-4">
+                        <input type="text" id="article-title-input" placeholder="Judul Materi" class="w-full p-4 rounded-xl border border-gray-200 focus:outline-none focus:ring-4 focus:ring-blue-100 transition-shadow">
+                        <textarea id="article-content-input" placeholder="Isi materi..." rows="8" class="w-full p-4 rounded-xl border border-gray-200 focus:outline-none focus:ring-4 focus:ring-blue-100 transition-shadow"></textarea>
+                        <button id="save-article-btn" class="w-full py-3 px-6 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-md transition-colors duration-300">
+                            Simpan Materi
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Admin Tab Ganti Password -->
+                <div id="admin-content-change-password" class="tab-content hidden">
+                    <h2 class="text-2xl font-extrabold mb-6 text-gray-800">Ganti Password Anda</h2>
+                    <div class="bg-gray-100 rounded-xl p-6 shadow-md space-y-4 max-w-md mx-auto">
+                        <input type="password" id="admin-old-password-input" placeholder="Password Lama" class="w-full p-4 rounded-xl border border-gray-200 focus:outline-none focus:ring-4 focus:ring-blue-100 transition-shadow">
+                        <input type="password" id="admin-new-password-input" placeholder="Password Baru (min. 4 karakter)" class="w-full p-4 rounded-xl border border-gray-200 focus:outline-none focus:ring-4 focus:ring-blue-100 transition-shadow">
+                        <input type="password" id="admin-confirm-password-input" placeholder="Konfirmasi Password Baru" class="w-full p-4 rounded-xl border border-gray-200 focus:outline-none focus:ring-4 focus:ring-blue-100 transition-shadow">
+                        <button id="admin-update-password-btn" class="w-full py-3 px-6 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-md transition-colors duration-300">
+                            Simpan Password Baru
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Super Admin Dashboard View -->
+        <div id="super-admin-dashboard-view" class="view hidden">
+            <header class="flex flex-col md:flex-row justify-between items-start md:items-center pb-4 border-b border-gray-200 mb-6">
+                <h1 class="text-2xl font-bold text-gray-800 mb-2 md:mb-0">Dasbor Super Admin: <span id="super-admin-name-header" class="text-red-600"></span></h1>
+                <button id="super-admin-logout-btn" class="py-2 px-4 bg-red-500 hover:bg-red-600 text-white rounded-xl font-medium transition-colors duration-300 shadow-md">
+                    Keluar
+                </button>
+            </header>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Create Account Section -->
+                <div class="bg-blue-50 rounded-xl p-6 shadow-md">
+                    <h3 class="text-xl font-bold text-blue-700 mb-4">➕ Buat Akun Baru</h3>
+                    <p class="text-sm text-gray-600 mb-4">Password default untuk semua akun baru adalah **'12345'**.</p>
+                    <div class="space-y-4">
+                        <input type="text" id="new-account-name-input" placeholder="Nama Pengguna Baru" class="w-full p-3 rounded-xl border border-blue-200 focus:outline-none focus:ring-4 focus:ring-blue-100 transition-shadow">
+                        <select id="new-account-role-select" class="w-full p-3 rounded-xl border border-blue-200 focus:outline-none focus:ring-4 focus:ring-blue-100 transition-shadow bg-white">
+                            <option value="user">Siswa</option>
+                            <option value="admin">Guru BK</option>
+                        </select>
+                        <button id="create-new-account-btn" class="w-full py-3 px-6 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-md transition-colors duration-300">
+                            Buat Akun
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Manage Accounts Section (Separated Lists) -->
+                <div class="space-y-6">
+                    <div>
+                        <h3 class="text-xl font-extrabold text-gray-800 mb-2">Daftar Akun Guru BK</h3>
+                        <div id="admin-accounts-list" class="space-y-2 p-4 bg-white rounded-xl shadow-md max-h-60 overflow-y-auto">
+                            <!-- Admin accounts list will be rendered here -->
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-extrabold text-gray-800 mb-2">Daftar Akun Siswa</h3>
+                        <div id="student-accounts-list" class="space-y-2 p-4 bg-white rounded-xl shadow-md max-h-80 overflow-y-auto">
+                            <!-- Student accounts list will be rendered here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- 1. Confirmation Modal (for Booking - with Category and Optional Reason) -->
+        <div id="booking-confirmation-modal" class="modal hidden">
+            <div class="bg-white rounded-2xl p-8 shadow-2xl max-w-lg w-full transform transition-all">
+                <h3 class="text-2xl font-bold mb-4 text-blue-600">Konfirmasi Janji Temu</h3>
+                <p id="booking-modal-text" class="text-gray-700 mb-6">Pilih kategori masalah utama Anda. Detail singkat adalah opsional.</p>
+                
+                <label for="appointment-category-select" class="block text-sm font-medium text-gray-700 mb-1">Kategori Masalah <span class="text-red-500">* Wajib</span></label>
+                <select id="appointment-category-select" class="w-full p-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4">
+                    <option value="">-- Pilih Kategori --</option>
+                    <option value="Akademik">Akademik (Nilai, Belajar, Jurusan)</option>
+                    <option value="Sosial">Sosial (Pergaulan, Konflik, Perundungan)</option>
+                    <option value="Karir/Masa Depan">Karir/Masa Depan (Pilihan Universitas/Kerja)</option>
+                    <option value="Pribadi">Pribadi (Emosi, Stres, Keluarga)</option>
+                    <option value="Lainnya">Lainnya</option>
+                </select>
+
+                <label for="appointment-reason-input" class="block text-sm font-medium text-gray-700 mb-1">Detail Singkat (Opsional)</label>
+                <textarea id="appointment-reason-input" placeholder="Jelaskan secara singkat atau detail (Opsional)..." rows="3" class="w-full p-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 mb-6"></textarea>
+
+                <div class="flex justify-end space-x-4">
+                    <button id="booking-modal-cancel-btn" class="py-2 px-4 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold rounded-xl transition-colors">Batal</button>
+                    <button id="booking-modal-confirm-btn" class="py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl transition-colors">Konfirmasi</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 2. Generic Confirmation Modal (For Cancel/Reject Actions - No input) -->
+        <div id="generic-confirmation-modal" class="modal hidden">
+            <div class="bg-white rounded-2xl p-8 shadow-2xl max-w-lg w-full transform transition-all">
+                <h3 id="generic-modal-title" class="text-2xl font-bold mb-4 text-red-600">Konfirmasi Aksi</h3>
+                <p id="generic-modal-text" class="text-gray-700 mb-6">Apakah Anda yakin ingin melakukan aksi ini?</p>
+                <div class="flex justify-end space-x-4">
+                    <button id="generic-modal-cancel-btn" class="py-2 px-4 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold rounded-xl transition-colors">Batal</button>
+                    <button id="generic-modal-confirm-btn" class="py-2 px-4 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-xl transition-colors">Ya, Konfirmasi</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Custom Alert Modal (Replaces browser alert()) -->
+        <div id="alert-modal" class="modal hidden">
+            <div class="bg-white rounded-2xl p-8 shadow-2xl max-w-sm w-full transform transition-all">
+                <h3 id="alert-title" class="text-xl font-bold mb-4 text-gray-800">Informasi</h3>
+                <p id="alert-text" class="text-gray-700 mb-6">Pesan.</p>
+                <div class="flex justify-end">
+                    <button id="alert-ok-btn" class="py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl transition-colors">OK</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- Supabase Client Initialization ---
+        // !!! PENTING: Ganti dengan URL dan Kunci ANON Proyek Supabase Anda !!!
+        const SUPABASE_URL = 'https://itxihpvquaurkgwussyz.supabase.co'; // Ganti dengan URL Proyek Anda
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml0eGlocHZxdWF1cmtnd3Vzc3l6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA5NzAyMTcsImV4cCI6MjA3NjU0NjIxN30.tsGt4BTB5orGiv-PXizQCWgk3iWXgiM6L_QxyEDNXbs'; // Ganti dengan Kunci ANON Anda
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        // --- Global State Variables ---
+        let currentUser = null;
+        let currentRole = null;
+        const DEFAULT_ACCOUNT_PASSWORD = '12345'; 
+
+        let pendingAppointment = null;
+        let genericActionCallback = null; // Store the callback function for generic confirmation
+
+        // Data from Supabase will be stored here
+        let localUsersCache = [];
+        let localAppointmentsCache = [];
+        let localArticlesCache = [];
+        
+        // Counselor WhatsApp numbers
+        const gofarNumber = '6283147559807'; 
+        const rohmanNumber = '6281388464385';
+
+        // --- DOM elements ---
+        const loadingOverlay = document.getElementById('loading-overlay');
+        const appContainer = document.getElementById('app-container');
+
+        const loginView = document.getElementById('login-view');
+        const studentLoginView = document.getElementById('student-login-view');
+        const adminLoginView = document.getElementById('admin-login-view');
+        const superAdminLoginView = document.getElementById('super-admin-login-view');
+        const userDashboardView = document.getElementById('user-dashboard-view');
+        const adminDashboardView = document.getElementById('admin-dashboard-view');
+        const superAdminDashboardView = document.getElementById('super-admin-dashboard-view');
+
+        const studentNameHeader = document.getElementById('student-name-header');
+        const adminNameHeader = document.getElementById('admin-name-header');
+        const superAdminNameHeader = document.getElementById('super-admin-name-header');
+
+        const gofarSlots = document.getElementById('gofar-slots');
+        const rohmanSlots = document.getElementById('rohman-slots');
+        const myAppointments = document.getElementById('my-appointments');
+
+        const adminAppointmentList = document.getElementById('admin-appointment-list');
+        const articleList = document.getElementById('article-list');
+        
+        const createNewAccountBtn = document.getElementById('create-new-account-btn');
+
+        const bookingConfirmationModal = document.getElementById('booking-confirmation-modal');
+        const bookingModalText = document.getElementById('booking-modal-text');
+        const bookingModalConfirmBtn = document.getElementById('booking-modal-confirm-btn');
+        const bookingModalCancelBtn = document.getElementById('booking-modal-cancel-btn');
+        const appointmentCategorySelect = document.getElementById('appointment-category-select'); 
+        const appointmentReasonInput = document.getElementById('appointment-reason-input');
+        
+        const genericConfirmationModal = document.getElementById('generic-confirmation-modal');
+        const genericModalTitle = document.getElementById('generic-modal-title');
+        const genericModalText = document.getElementById('generic-modal-text');
+        const genericModalConfirmBtn = document.getElementById('generic-modal-confirm-btn');
+        const genericModalCancelBtn = document.getElementById('generic-modal-cancel-btn');
+
+        const alertModal = document.getElementById('alert-modal');
+        const alertTitle = document.getElementById('alert-title');
+        const alertText = document.getElementById('alert-text');
+        const alertOkBtn = document.getElementById('alert-ok-btn');
+
+        // --- Helper Functions ---
+        
+        function showView(viewId) {
+            hideBookingConfirmation();
+            hideGenericConfirmation();
+            hideAlert();
+            
+            document.querySelectorAll('.view').forEach(view => view.classList.add('hidden'));
+            document.getElementById(viewId).classList.remove('hidden');
+        }
+
+        async function fetchAllData() {
+            const { data: usersData, error: usersError } = await supabaseClient.from('users').select('*');
+            if (usersError) console.error('Error fetching users:', usersError);
+            else localUsersCache = usersData;
+            
+            const { data: articlesData, error: articlesError } = await supabaseClient.from('articles').select('*');
+            if (articlesError) console.error('Error fetching articles:', articlesError);
+            else localArticlesCache = articlesData;
+
+            const { data: appointmentsData, error: appointmentsError } = await supabaseClient.from('appointments').select('*');
+            if (appointmentsError) console.error('Error fetching appointments:', appointmentsError);
+            else localAppointmentsCache = appointmentsData;
+        }
+
+        // Custom Alert function to replace browser alert()
+        function showAlert(message, type = 'info') {
+            alertText.innerHTML = message;
+            
+            alertTitle.className = 'text-xl font-bold mb-4';
+            switch (type) {
+                case 'success':
+                    alertTitle.textContent = 'Berhasil';
+                    alertTitle.classList.add('text-green-600');
+                    break;
+                case 'error':
+                    alertTitle.textContent = 'Peringatan';
+                    alertTitle.classList.add('text-red-600');
+                    break;
+                case 'info':
+                default:
+                    alertTitle.textContent = 'Informasi';
+                    alertTitle.classList.add('text-blue-600');
+                    break;
+            }
+            
+            alertModal.classList.remove('hidden');
+        }
+        
+        function showGenericConfirmation(title, text, callback, confirmBtnClass = 'bg-red-600 hover:bg-red-700') {
+            genericModalTitle.textContent = title;
+            genericModalText.innerHTML = text;
+            
+            genericModalConfirmBtn.className = `py-2 px-4 text-white font-semibold rounded-xl transition-colors ${confirmBtnClass}`;
+            
+            genericActionCallback = callback;
+            genericConfirmationModal.classList.remove('hidden');
+        }
+
+        function hideGenericConfirmation() {
+            genericConfirmationModal.classList.add('hidden');
+            genericActionCallback = null;
+        }
+
+        function hideAlert() {
+            alertModal.classList.add('hidden');
+        }
+
+        genericModalConfirmBtn.addEventListener('click', () => {
+            if (genericActionCallback) {
+                genericActionCallback();
+            }
+            hideGenericConfirmation();
+        });
+
+        genericModalCancelBtn.addEventListener('click', hideGenericConfirmation);
+        
+        // --- Appointment Generation and Rendering ---
+        
+        function getAppointmentSlots() {
+            // This function remains the same as it generates time slots, not data
+            const slots = [];
+            for (let h = 7; h <= 15; h++) {
+                for (let m = (h === 7 ? 15 : 0); m < 60; m += 45) {
+                    const nextM = m + 45;
+                    const nextH = h + Math.floor(nextM / 60);
+                    const nextMMod = nextM % 60;
+                    
+                    const startStr = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+                    const endStr = `${String(nextH).padStart(2, '0')}:${String(nextMMod).padStart(2, '0')}`;
+                    
+                    const timeSlot = `${startStr}-${endStr}`;
+
+                    const isBreak = (startStr === '09:30' || startStr === '12:00');
+                    if (!isBreak && nextH <= 16) {
+                        slots.push(timeSlot);
+                    }
+                }
+            }
+            return slots;
+        }
+
+        function renderAppointmentSlots() {
+            const slots = getAppointmentSlots();
+            gofarSlots.innerHTML = '';
+            rohmanSlots.innerHTML = '';
+
+            const todayAppointments = localAppointmentsCache.filter(app => new Date(app.date).toDateString() === new Date().toDateString());
+            
+            const hasPendingAppointment = todayAppointments.some(app => app.studentName === currentUser && app.status === 'pending');
+
+            ['Gofar', 'Rohman'].forEach(counselor => {
+                const container = counselor === 'Gofar' ? gofarSlots : rohmanSlots;
+                slots.forEach(slot => {
+                    const approvedAppointment = todayAppointments.find(
+                        app => app.counselorName === counselor && app.timeSlot === slot && app.status === 'approved'
+                    );
+                    
+                    const btn = document.createElement('button');
+                    btn.textContent = slot;
+                    btn.className = `w-full py-2 px-1 rounded-lg font-semibold text-sm transition-all duration-300 shadow-sm`;
+                    
+                    if (approvedAppointment) {
+                        btn.disabled = true;
+                        btn.classList.add('slot-approved');
+                        btn.textContent = `${slot} (Terisi)`;
+                    } else if (hasPendingAppointment) {
+                        btn.disabled = true;
+                        btn.classList.add('bg-gray-300', 'text-gray-600', 'cursor-not-allowed');
+                        btn.title = 'Anda sudah memiliki permintaan janji temu yang menunggu persetujuan.';
+                    } else {
+                        btn.classList.add('slot-available');
+                        btn.onclick = () => showBookingConfirmation(counselor, slot);
+                    }
+                    container.appendChild(btn);
+                });
+            });
+        }
+        
+        function showBookingConfirmation(counselorName, timeSlot) {
+            pendingAppointment = {
+                counselorName,
+                timeSlot,
+                studentName: currentUser,
+            };
+            bookingModalText.textContent = `Anda akan membuat janji temu dengan ${counselorName} pada jam ${timeSlot} WIB. Pilih kategori masalah dan jelaskan secara singkat (opsional).`;
+            
+            appointmentCategorySelect.value = '';
+            appointmentReasonInput.value = '';
+
+            bookingConfirmationModal.classList.remove('hidden');
+        }
+
+        function hideBookingConfirmation() {
+            bookingConfirmationModal.classList.add('hidden');
+            pendingAppointment = null;
+            appointmentCategorySelect.value = '';
+            appointmentReasonInput.value = '';
+        }
+
+        async function confirmAppointment() {
+            const category = appointmentCategorySelect.value; 
+            const reason = appointmentReasonInput.value.trim();
+            
+            if (!category) {
+                showAlert('Anda wajib memilih **Kategori Masalah**.', 'error');
+                return;
+            }
+
+            if (pendingAppointment) {
+                const newAppointmentData = {
+                    studentName: pendingAppointment.studentName,
+                    counselorName: pendingAppointment.counselorName,
+                    timeSlot: pendingAppointment.timeSlot,
+                    category: category, 
+                    reason: reason || 'Tidak ada detail tambahan.', 
+                    status: 'pending',
+                    date: new Date().toISOString(),
+                };
+
+                const { data, error } = await supabaseClient.from('appointments').insert([newAppointmentData]).select();
+                
+                if (error) {
+                    showAlert('Gagal mengajukan janji temu. Coba lagi.', 'error');
+                    console.error('Error inserting appointment:', error);
+                } else {
+                    localAppointmentsCache.push(data[0]);
+                    renderMyAppointments();
+                    renderAppointmentSlots(); 
+                    hideBookingConfirmation();
+                    showAlert('Janji temu berhasil diajukan! Mohon menunggu persetujuan dari guru BK.', 'success');
+                }
+            }
+        }
+        
+        function renderMyAppointments() {
+            myAppointments.innerHTML = '';
+            const today = new Date().toDateString();
+            const myTodayAppointments = localAppointmentsCache.filter(app => 
+                app.studentName === currentUser && new Date(app.date).toDateString() === today
+            );
+
+            if (myTodayAppointments.length === 0) {
+                myAppointments.innerHTML = '<p class="text-gray-500 text-sm italic">Anda belum membuat janji temu hari ini.</p>';
+            } else {
+                myTodayAppointments.forEach(app => {
+                    const isApproved = app.status === 'approved';
+                    const isRejected = app.status === 'rejected';
+
+                    const statusClass = isApproved ? 'bg-indigo-100 text-indigo-800 border-l-4 border-indigo-500' 
+                        : (isRejected ? 'bg-red-100 text-red-800 border-l-4 border-red-500'
+                            : 'bg-amber-100 text-amber-800 border-l-4 border-amber-500');
+
+                    const statusText = isApproved ? 'Diterima' : (isRejected ? 'Ditolak' : 'Menunggu Persetujuan');
+                    
+                    const card = document.createElement('div');
+                    card.className = `p-4 rounded-xl shadow-md ${statusClass} relative`;
+                    
+                    let contentHTML = `
+                        <p class="font-bold text-lg mb-1">${app.timeSlot} | ${app.counselorName}</p>
+                        <p class="text-sm font-semibold mb-2">Status: <span class="uppercase">${statusText}</span></p>
+                        <p class="text-xs text-gray-700">Kategori: <span class="font-medium">${app.category}</span></p>
+                        <p class="text-xs text-gray-700 italic">Detail: ${app.reason}</p>
+                    `;
+
+                    if (!isRejected) {
+                        contentHTML += `
+                            <button class="cancel-appointment-btn mt-3 py-1 px-3 bg-red-500 hover:bg-red-600 text-white text-xs font-semibold rounded-lg transition-colors" data-appid="${app.id}">
+                                Batalkan
+                            </button>
+                        `;
+                    }
+                    
+                    card.innerHTML = contentHTML;
+                    myAppointments.appendChild(card);
+                });
+                
+                document.querySelectorAll('.cancel-appointment-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const appId = e.target.dataset.appid;
+                        const appToCancel = localAppointmentsCache.find(a => a.id == appId);
+                        if (appToCancel) {
+                            showGenericConfirmation(
+                                'Batalkan Janji Temu',
+                                `Apakah Anda yakin ingin membatalkan janji temu dengan **${appToCancel.counselorName}** pada jam **${appToCancel.timeSlot}**?`,
+                                () => handleCancelAppointment(appId),
+                                'bg-red-600 hover:bg-red-700'
+                            );
+                        }
+                    });
+                });
+            }
+        }
+        
+        async function handleCancelAppointment(appId) {
+            const { error } = await supabaseClient.from('appointments').delete().eq('id', appId);
+
+            if (error) {
+                showAlert('Gagal membatalkan janji temu.', 'error');
+                console.error('Error canceling appointment:', error);
+            } else {
+                localAppointmentsCache = localAppointmentsCache.filter(app => app.id != appId);
+                renderMyAppointments();
+                renderAppointmentSlots();
+                showAlert('Janji temu berhasil dibatalkan.', 'success');
+            }
+        }
+        
+        // --- Article Rendering ---
+        function renderArticles() {
+            articleList.innerHTML = '';
+            localArticlesCache.slice().reverse().forEach((article) => {
+                const articleElement = document.createElement('div');
+                articleElement.className = 'p-6 bg-white rounded-xl shadow-lg border-l-4 border-teal-500';
+                articleElement.innerHTML = `
+                    <h3 class="text-xl font-bold text-teal-700 mb-2">${article.title}</h3>
+                    <p class="text-sm text-gray-500 mb-4">Ditulis oleh: ${article.author}</p>
+                    <p class="text-gray-700 whitespace-pre-wrap">${article.content}</p>
+                `;
+                articleList.appendChild(articleElement);
+            });
+        }
+        
+        // --- Admin Functions ---
+        
+        function renderAdminAppointments() {
+            adminAppointmentList.innerHTML = '';
+            const today = new Date().toDateString();
+            const filteredAppointments = localAppointmentsCache.filter(app => new Date(app.date).toDateString() === today);
+            
+            const grouped = filteredAppointments.reduce((acc, app) => {
+                const key = app.category;
+                if (!acc[key]) acc[key] = [];
+                acc[key].push(app);
+                return acc;
+            }, {});
+
+            if (filteredAppointments.length === 0) {
+                 adminAppointmentList.innerHTML = '<p class="text-gray-500 text-lg p-6 bg-white rounded-xl shadow-inner">Belum ada permintaan janji temu hari ini.</p>';
+                 return;
+            }
+
+            Object.keys(grouped).sort().forEach(category => {
+                const categoryDiv = document.createElement('div');
+                categoryDiv.className = 'mb-8 p-6 bg-white rounded-xl shadow-xl';
+                categoryDiv.innerHTML = `<h3 class="text-xl font-extrabold text-indigo-700 mb-4 border-b pb-2">Kategori: ${category} (${grouped[category].length})</h3>`;
+                
+                grouped[category].sort((a, b) => a.timeSlot.localeCompare(b.timeSlot)).forEach((app) => {
+                    const statusClass = app.status === 'approved' ? 'bg-indigo-50 border-indigo-400' : 
+                                        (app.status === 'rejected' ? 'bg-red-50 border-red-400' : 'bg-amber-50 border-amber-400');
+                    
+                    const appDiv = document.createElement('div');
+                    appDiv.className = `p-4 border-l-4 ${statusClass} rounded-lg mb-3 shadow-sm`;
+                    
+                    let buttonsHTML = '';
+                    if (app.status === 'pending') {
+                        buttonsHTML = `
+                            <div class="flex space-x-2 mt-3">
+                                <button class="approve-btn py-1 px-3 bg-green-600 hover:bg-green-700 text-white text-sm font-semibold rounded-lg transition-colors" data-appid="${app.id}">
+                                    ✅ Setuju
+                                </button>
+                                <button class="reject-btn py-1 px-3 bg-red-600 hover:bg-red-700 text-white text-sm font-semibold rounded-lg transition-colors" data-appid="${app.id}">
+                                    ❌ Tolak
+                                </button>
+                            </div>
+                        `;
+                    } else {
+                         buttonsHTML = `<div class="flex items-center space-x-3 mt-2">
+                            <p class="text-sm font-semibold ${app.status === 'approved' ? 'text-indigo-600' : 'text-red-600'}">Status: ${app.status.toUpperCase()}</p>
+                            ${app.status === 'approved' ? `
+                            <button class="finish-appointment-btn py-1 px-3 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg transition-colors" data-appid="${app.id}">
+                                ✔️ Selesai
+                            </button>` : ''}
+                         </div>`;
+                    }
+
+                    appDiv.innerHTML = `
+                        <p class="font-bold text-lg">${app.timeSlot} | ${app.studentName} (dengan ${app.counselorName})</p>
+                        <p class="text-sm text-gray-700 italic">Detail: ${app.reason}</p>
+                        ${buttonsHTML}
+                    `;
+                    categoryDiv.appendChild(appDiv);
+                });
+                adminAppointmentList.appendChild(categoryDiv);
+            });
+            
+            document.querySelectorAll('.approve-btn, .reject-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const appId = e.target.dataset.appid;
+                    const app = localAppointmentsCache.find(a => a.id == appId);
+                    const action = e.target.classList.contains('approve-btn') ? 'approved' : 'rejected';
+                    const actionText = action === 'approved' ? 'menyetujui' : 'menolak';
+                    const btnClass = action === 'approved' ? 'bg-green-600 hover:bg-green-700' : 'bg-red-600 hover:bg-red-700';
+
+                    showGenericConfirmation(
+                        `Konfirmasi Janji Temu`,
+                        `Yakin ingin **${actionText}** janji temu ${app.studentName} pada ${app.timeSlot}?`,
+                        () => handleAdminAction(appId, action),
+                        btnClass
+                    );
+                });
+            });
+
+            document.querySelectorAll('.finish-appointment-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const appId = e.target.dataset.appid;
+                    const app = localAppointmentsCache.find(a => a.id == appId);
+                    showGenericConfirmation(
+                        'Selesaikan Janji Temu',
+                        `Menyelesaikan janji temu dengan **${app.studentName}** akan menghapus riwayat ini dan membuka kembali slot waktu. Lanjutkan?`,
+                        () => handleFinishAppointment(appId),
+                        'bg-blue-600 hover:bg-blue-700'
+                    );
+                });
+            });
+        }
+        
+        async function handleAdminAction(appId, status) {
+            const app = localAppointmentsCache.find(a => a.id == appId);
+
+            if (status === 'approved') {
+                const conflictExists = localAppointmentsCache.some(otherApp => 
+                    otherApp.id != appId &&
+                    otherApp.counselorName === app.counselorName &&
+                    otherApp.timeSlot === app.timeSlot &&
+                    otherApp.status === 'approved' &&
+                    new Date(otherApp.date).toDateString() === new Date(app.date).toDateString()
+                );
+                if (conflictExists) {
+                    showAlert('**Gagal disetujui!** Slot waktu tersebut sudah terisi. Mohon tolak permintaan ini.', 'error');
+                    return;
+                }
+            }
+            
+            const { error } = await supabaseClient.from('appointments').update({ status: status }).eq('id', appId);
+
+            if (error) {
+                showAlert('Gagal mengubah status janji temu.', 'error');
+            } else {
+                app.status = status;
+                renderAdminAppointments();
+                showAlert(`Janji temu berhasil diubah menjadi: **${status.toUpperCase()}**.`, 'success');
+            }
+        }
+        
+        async function handleFinishAppointment(appId) {
+            const app = localAppointmentsCache.find(a => a.id == appId);
+            const { error } = await supabaseClient.from('appointments').delete().eq('id', appId);
+
+            if (error) {
+                showAlert('Gagal menyelesaikan janji temu.', 'error');
+            } else {
+                localAppointmentsCache = localAppointmentsCache.filter(a => a.id != appId);
+                renderAdminAppointments();
+                showAlert(`Janji temu dengan **${app.studentName}** telah selesai.`, 'success');
+            }
+        }
+
+        async function handleSaveArticle() {
+            const title = document.getElementById('article-title-input').value.trim();
+            const content = document.getElementById('article-content-input').value.trim();
+            
+            if (!title || !content) {
+                showAlert('Judul dan isi materi wajib diisi.', 'error');
+                return;
+            }
+
+            const { data, error } = await supabaseClient.from('articles')
+                .insert([{ title: title, content: content, author: currentUser }])
+                .select();
+
+            if (error) {
+                showAlert('Gagal menyimpan materi.', 'error');
+            } else {
+                localArticlesCache.push(data[0]);
+                document.getElementById('article-title-input').value = '';
+                document.getElementById('article-content-input').value = '';
+                showAlert('Materi motivasi baru berhasil ditambahkan!', 'success');
+            }
+        }
+        
+        // --- Super Admin Functions ---
+
+        function renderAllAccounts() {
+            const adminAccountsList = document.getElementById('admin-accounts-list');
+            const studentAccountsList = document.getElementById('student-accounts-list');
+
+            adminAccountsList.innerHTML = '';
+            studentAccountsList.innerHTML = '';
+
+            const adminUsers = localUsersCache.filter(u => u.role === 'admin').sort((a, b) => a.name.localeCompare(b.name));
+            const studentUsers = localUsersCache.filter(u => u.role === 'user').sort((a, b) => a.name.localeCompare(b.name));
+
+            const createListItem = (user) => {
+                let roleText = user.role === 'admin' ? 'Guru BK' : 'Siswa';
+                let roleClass = user.role === 'admin' ? 'bg-gray-200 text-gray-800' : 'bg-blue-100 text-blue-800';
+
+                const userDiv = document.createElement('div');
+                userDiv.className = 'flex justify-between items-center p-3 border-b last:border-b-0 hover:bg-gray-50';
+
+                const actionButtonsHTML = `<div class="flex space-x-2">
+                    <button class="reset-password-btn py-1 px-3 bg-amber-500 hover:bg-amber-600 text-white text-xs font-semibold rounded-lg transition-colors" data-userid="${user.id}" data-username="${user.name}">
+                        🔑 Reset
+                    </button>
+                    <button class="delete-account-btn py-1 px-3 bg-red-600 hover:bg-red-700 text-white text-xs font-semibold rounded-lg transition-colors" data-userid="${user.id}" data-username="${user.name}">
+                        🗑️ Hapus
+                    </button>
+                </div>`;
+                
+                userDiv.innerHTML = `
+                    <div>
+                        <p class="font-medium text-gray-800">${user.name}</p>
+                        <p class="text-xs font-semibold px-2 py-0.5 rounded-full inline-block ${roleClass}">${roleText}</p>
+                    </div>
+                    ${(user.name.toLowerCase() !== currentUser.toLowerCase()) ? actionButtonsHTML : ''}
+                `;
+                return userDiv;
+            };
+
+            adminUsers.forEach(user => adminAccountsList.appendChild(createListItem(user)));
+            studentUsers.forEach(user => studentAccountsList.appendChild(createListItem(user)));
+
+            document.querySelectorAll('.delete-account-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const userId = e.target.dataset.userid;
+                    const userName = e.target.dataset.username;
+                    showGenericConfirmation('Hapus Akun', `Anda yakin ingin **menghapus permanen** akun **${userName}**?`, () => handleDeleteAccountBySuperAdmin(userId, userName));
+                });
+            });
+
+            document.querySelectorAll('.reset-password-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const userId = e.target.dataset.userid;
+                    const userName = e.target.dataset.username;
+                    showGenericConfirmation('Reset Sandi Akun', `Anda yakin ingin mereset sandi untuk **${userName}** ke default?`, () => handleResetPasswordBySuperAdmin(userId, userName), 'bg-amber-500 hover:bg-amber-600');
+                });
+            });
+        }
+        
+        async function handleCreateAccount() {
+            const nameInput = document.getElementById('new-account-name-input');
+            const roleSelect = document.getElementById('new-account-role-select');
+            const newName = nameInput.value.trim();
+            const newRole = roleSelect.value;
+
+            if (!newName) return showAlert('Nama pengguna tidak boleh kosong.', 'error');
+            if (localUsersCache.some(u => u.name.toLowerCase() === newName.toLowerCase())) return showAlert(`Akun dengan nama **${newName}** sudah ada.`, 'error');
+
+            const { data, error } = await supabaseClient.from('users').insert([{ name: newName, role: newRole, password: DEFAULT_ACCOUNT_PASSWORD }]).select();
+
+            if (error) showAlert('Gagal membuat akun.', 'error');
+            else {
+                localUsersCache.push(data[0]);
+                nameInput.value = '';
+                renderAllAccounts();
+                showAlert(`Akun **${newName}** berhasil dibuat.`, 'success');
+            }
+        }
+
+        async function handleDeleteAccountBySuperAdmin(userId, userName) {
+            const { error } = await supabaseClient.from('users').delete().eq('id', userId);
+
+            if (error) showAlert('Gagal menghapus akun.', 'error');
+            else {
+                localUsersCache = localUsersCache.filter(u => u.id != userId);
+                // Also delete their appointments
+                await supabaseClient.from('appointments').delete().eq('studentName', userName);
+                localAppointmentsCache = localAppointmentsCache.filter(a => a.studentName !== userName);
+                renderAllAccounts();
+                showAlert(`Akun **${userName}** berhasil dihapus.`, 'success');
+            }
+        }
+
+        async function handleResetPasswordBySuperAdmin(userId, userName) {
+            const { error } = await supabaseClient.from('users').update({ password: DEFAULT_ACCOUNT_PASSWORD }).eq('id', userId);
+
+            if (error) showAlert('Gagal mereset sandi.', 'error');
+            else {
+                const user = localUsersCache.find(u => u.id == userId);
+                if (user) user.password = DEFAULT_ACCOUNT_PASSWORD;
+                showAlert(`Sandi untuk akun **${userName}** telah direset.`, 'success');
+            }
+        }
+        
+        // --- Authentication & Initialization ---
+
+        async function handleLogin(name, password, role) {
+            const { data, error } = await supabaseClient
+                .from('users')
+                .select('*')
+                .eq('name', name)
+                .eq('password', password)
+                .eq('role', role)
+                .single(); // .single() expects one result or throws error
+
+            if (data && !error) {
+                currentUser = data.name;
+                currentRole = data.role;
+                
+                if (currentRole === 'user') {
+                    studentNameHeader.textContent = currentUser;
+                    showView('user-dashboard-view');
+                    initializeUserDashboard();
+                } else if (currentRole === 'admin') {
+                    adminNameHeader.textContent = currentUser;
+                    showView('admin-dashboard-view');
+                    initializeAdminDashboard();
+                } else if (currentRole === 'superadmin') {
+                    superAdminNameHeader.textContent = currentUser;
+                    showView('super-admin-dashboard-view');
+                    initializeSuperAdminDashboard();
+                }
+            } else {
+                showAlert('Nama pengguna atau password salah.', 'error');
+            }
+        }
+        
+        async function handleUpdatePassword(oldPassword, newPassword, confirmPassword) {
+            const user = localUsersCache.find(u => u.name === currentUser);
+            
+            if (user.password !== oldPassword) return showAlert('Password lama Anda salah.', 'error');
+            if (newPassword.length < 4) return showAlert('Password baru minimal harus 4 karakter.', 'error');
+            if (newPassword !== confirmPassword) return showAlert('Konfirmasi password tidak cocok.', 'error');
+            
+            const { error } = await supabaseClient.from('users').update({ password: newPassword }).eq('name', currentUser);
+
+            if (error) {
+                showAlert('Gagal memperbarui password.', 'error');
+            } else {
+                user.password = newPassword;
+                showAlert('Password berhasil diperbarui.', 'success');
+                // Clear inputs based on role
+                if(currentRole === 'admin') {
+                    document.getElementById('admin-old-password-input').value = '';
+                    document.getElementById('admin-new-password-input').value = '';
+                    document.getElementById('admin-confirm-password-input').value = '';
+                } else {
+                    document.getElementById('old-password-input').value = '';
+                    document.getElementById('new-password-input').value = '';
+                    document.getElementById('confirm-password-input').value = '';
+                }
+            }
+        }
+
+        function handleLogout() {
+            hideBookingConfirmation();
+            hideGenericConfirmation();
+            hideAlert();
+            currentUser = null;
+            currentRole = null;
+            showView('login-view');
+        }
+
+        function initializeUserDashboard() {
+            document.getElementById('chat-gofar-btn').href = `https://wa.me/${gofarNumber}?text=Halo%20Bapak%20Gofar,%20saya%20${currentUser}.%20Saya%20perlu%20konsultasi.`;
+            document.getElementById('chat-rohman-btn').href = `https://wa.me/${rohmanNumber}?text=Halo%20Bapak%20Rohman,%20saya%20${currentUser}.%20Saya%20perlu%20konsultasi.`;
+
+            // Reset tabs
+            document.querySelectorAll('#user-dashboard-view .tab-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById('content-appointment').classList.remove('hidden');
+            document.querySelectorAll('#user-dashboard-view button[id^="tab-"]').forEach(btn => {
+                btn.classList.remove('bg-white', 'shadow-sm', 'text-blue-600', 'font-semibold');
+                btn.classList.add('text-gray-600', 'hover:bg-white', 'hover:shadow-sm', 'font-medium');
+            });
+            document.getElementById('tab-appointment').classList.add('bg-white', 'shadow-sm', 'text-blue-600', 'font-semibold');
+            
+            renderAppointmentSlots();
+            renderMyAppointments();
+            renderArticles();
+        }
+        
+        function initializeAdminDashboard() {
+            document.querySelectorAll('#admin-dashboard-view .tab-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById('admin-content-appointments').classList.remove('hidden');
+             document.querySelectorAll('#admin-dashboard-view button[id^="admin-tab-"]').forEach(btn => {
+                btn.classList.remove('bg-white', 'shadow-sm', 'text-blue-600', 'font-semibold');
+                btn.classList.add('text-gray-600', 'hover:bg-white', 'hover:shadow-sm', 'font-medium');
+            });
+            document.getElementById('admin-tab-appointments').classList.add('bg-white', 'shadow-sm', 'text-blue-600', 'font-semibold');
+            renderAdminAppointments();
+        }
+        
+        function initializeSuperAdminDashboard() {
+            renderAllAccounts();
+        }
+        
+        // --- Event Listeners ---
+        
+        document.getElementById('show-student-login-btn').addEventListener('click', () => showView('student-login-view'));
+        document.getElementById('show-admin-login-btn').addEventListener('click', () => showView('admin-login-view'));
+        document.getElementById('show-super-admin-login-btn').addEventListener('click', () => showView('super-admin-login-view'));
+
+        document.getElementById('student-back-btn').addEventListener('click', () => showView('login-view'));
+        document.getElementById('admin-back-btn-from-login').addEventListener('click', () => showView('login-view'));
+        document.getElementById('super-admin-back-btn').addEventListener('click', () => showView('login-view'));
+
+        document.getElementById('student-login-btn').addEventListener('click', () => {
+            const name = document.getElementById('student-name-input').value.trim();
+            const password = document.getElementById('student-password-input').value;
+            handleLogin(name, password, 'user');
+        });
+        document.getElementById('admin-login-btn').addEventListener('click', () => {
+             const name = document.getElementById('admin-name-input').value.trim();
+             const password = document.getElementById('admin-password').value;
+             handleLogin(name, password, 'admin');
+        });
+        document.getElementById('super-admin-login-btn').addEventListener('click', () => {
+            const name = document.getElementById('super-admin-name-input').value.trim();
+            const password = document.getElementById('super-admin-password').value;
+            handleLogin(name, password, 'superadmin');
+        });
+
+        document.getElementById('logout-btn').addEventListener('click', handleLogout);
+        document.getElementById('admin-logout-btn').addEventListener('click', handleLogout);
+        document.getElementById('super-admin-logout-btn').addEventListener('click', handleLogout);
+        
+        document.querySelectorAll('#user-dashboard-view button[id^="tab-"]').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const targetId = e.target.id.replace('tab-', 'content-');
+                document.querySelectorAll('#user-dashboard-view .tab-content').forEach(el => el.classList.add('hidden'));
+                document.getElementById(targetId).classList.remove('hidden');
+
+                document.querySelectorAll('#user-dashboard-view button[id^="tab-"]').forEach(b => {
+                    b.classList.remove('bg-white', 'shadow-sm', 'text-blue-600', 'font-semibold');
+                    b.classList.add('text-gray-600', 'hover:bg-white', 'hover:shadow-sm', 'font-medium');
+                });
+                e.target.classList.add('bg-white', 'shadow-sm', 'text-blue-600', 'font-semibold');
+            });
+        });
+        
+        document.querySelectorAll('#admin-dashboard-view button[id^="admin-tab-"]').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const targetId = e.target.id.replace('admin-tab-', 'admin-content-');
+                document.querySelectorAll('#admin-dashboard-view .tab-content').forEach(el => el.classList.add('hidden'));
+                document.getElementById(targetId).classList.remove('hidden');
+
+                document.querySelectorAll('#admin-dashboard-view button[id^="admin-tab-"]').forEach(b => {
+                    b.classList.remove('bg-white', 'shadow-sm', 'text-blue-600', 'font-semibold');
+                    b.classList.add('text-gray-600', 'hover:bg-white', 'hover:shadow-sm', 'font-medium');
+                });
+                e.target.classList.add('bg-white', 'shadow-sm', 'text-blue-600', 'font-semibold');
+            });
+        });
+
+        bookingModalCancelBtn.addEventListener('click', hideBookingConfirmation);
+        bookingModalConfirmBtn.addEventListener('click', confirmAppointment);
+        alertOkBtn.addEventListener('click', hideAlert);
+        document.getElementById('save-article-btn').addEventListener('click', handleSaveArticle);
+        createNewAccountBtn.addEventListener('click', handleCreateAccount);
+        document.getElementById('update-password-btn').addEventListener('click', () => {
+             const oldPass = document.getElementById('old-password-input').value;
+             const newPass = document.getElementById('new-password-input').value;
+             const confirmPass = document.getElementById('confirm-password-input').value;
+             handleUpdatePassword(oldPass, newPass, confirmPass);
+        });
+        document.getElementById('admin-update-password-btn').addEventListener('click', () => {
+             const oldPass = document.getElementById('admin-old-password-input').value;
+             const newPass = document.getElementById('admin-new-password-input').value;
+             const confirmPass = document.getElementById('admin-confirm-password-input').value;
+             handleUpdatePassword(oldPass, newPass, confirmPass);
+        });
+        
+        // --- Initial App Load ---
+        async function initializeApp() {
+            loadingOverlay.classList.remove('hidden');
+            appContainer.classList.add('hidden');
+
+            await fetchAllData();
+
+            loadingOverlay.classList.add('hidden');
+            appContainer.classList.remove('hidden');
+            showView('login-view');
+        }
+
+        initializeApp();
+
+    </script>
+</body>
+</html>
+
+
