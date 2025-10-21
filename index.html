@@ -594,13 +594,13 @@
 
             const todayAppointments = localAppointmentsCache.filter(app => new Date(app.date).toDateString() === new Date().toDateString());
             
-            const hasPendingAppointment = todayAppointments.some(app => app.studentName === currentUser && app.status === 'pending');
+            const hasPendingAppointment = todayAppointments.some(app => app.studentname === currentUser && app.status === 'pending');
 
             ['Gofar', 'Rohman'].forEach(counselor => {
                 const container = counselor === 'Gofar' ? gofarSlots : rohmanSlots;
                 slots.forEach(slot => {
                     const approvedAppointment = todayAppointments.find(
-                        app => app.counselorName === counselor && app.timeSlot === slot && app.status === 'approved'
+                        app => app.teachername === counselor && app.timeslot === slot && app.status === 'approved'
                     );
                     
                     const btn = document.createElement('button');
@@ -655,10 +655,18 @@
             }
 
             if (pendingAppointment) {
+                const studentUser = localUsersCache.find(u => u.name === pendingAppointment.studentName);
+                const teacherUser = localUsersCache.find(u => u.name === pendingAppointment.counselorName);
+
+                if (!studentUser || !teacherUser) {
+                    showAlert('Gagal menemukan data pengguna. Silakan coba muat ulang halaman.', 'error');
+                    return;
+                }
+
                 const newAppointmentData = {
-                    studentName: pendingAppointment.studentName,
-                    counselorName: pendingAppointment.counselorName,
-                    timeSlot: pendingAppointment.timeSlot,
+                    studentname: pendingAppointment.studentName,
+                    teachername: pendingAppointment.counselorName, 
+                    timeslot: pendingAppointment.timeSlot,
                     category: category, 
                     reason: reason || 'Tidak ada detail tambahan.', 
                     status: 'pending',
@@ -679,64 +687,85 @@
                 }
             }
         }
-        
+
         function renderMyAppointments() {
             myAppointments.innerHTML = '';
-            const today = new Date().toDateString();
-            const myTodayAppointments = localAppointmentsCache.filter(app => 
-                app.studentName === currentUser && new Date(app.date).toDateString() === today
-            );
+            const myApps = localAppointmentsCache.filter(app => app.studentname === currentUser);
 
-            if (myTodayAppointments.length === 0) {
-                myAppointments.innerHTML = '<p class="text-gray-500 text-sm italic">Anda belum membuat janji temu hari ini.</p>';
-            } else {
-                myTodayAppointments.forEach(app => {
-                    const isApproved = app.status === 'approved';
-                    const isRejected = app.status === 'rejected';
-
-                    const statusClass = isApproved ? 'bg-indigo-100 text-indigo-800 border-l-4 border-indigo-500' 
-                        : (isRejected ? 'bg-red-100 text-red-800 border-l-4 border-red-500'
-                            : 'bg-amber-100 text-amber-800 border-l-4 border-amber-500');
-
-                    const statusText = isApproved ? 'Diterima' : (isRejected ? 'Ditolak' : 'Menunggu Persetujuan');
-                    
-                    const card = document.createElement('div');
-                    card.className = `p-4 rounded-xl shadow-md ${statusClass} relative`;
-                    
-                    let contentHTML = `
-                        <p class="font-bold text-lg mb-1">${app.timeSlot} | ${app.counselorName}</p>
-                        <p class="text-sm font-semibold mb-2">Status: <span class="uppercase">${statusText}</span></p>
-                        <p class="text-xs text-gray-700">Kategori: <span class="font-medium">${app.category}</span></p>
-                        <p class="text-xs text-gray-700 italic">Detail: ${app.reason}</p>
-                    `;
-
-                    if (!isRejected) {
-                        contentHTML += `
-                            <button class="cancel-appointment-btn mt-3 py-1 px-3 bg-red-500 hover:bg-red-600 text-white text-xs font-semibold rounded-lg transition-colors" data-appid="${app.id}">
-                                Batalkan
-                            </button>
-                        `;
-                    }
-                    
-                    card.innerHTML = contentHTML;
-                    myAppointments.appendChild(card);
-                });
-                
-                document.querySelectorAll('.cancel-appointment-btn').forEach(btn => {
-                    btn.addEventListener('click', (e) => {
-                        const appId = e.target.dataset.appid;
-                        const appToCancel = localAppointmentsCache.find(a => a.id == appId);
-                        if (appToCancel) {
-                            showGenericConfirmation(
-                                'Batalkan Janji Temu',
-                                `Apakah Anda yakin ingin membatalkan janji temu dengan **${appToCancel.counselorName}** pada jam **${appToCancel.timeSlot}**?`,
-                                () => handleCancelAppointment(appId),
-                                'bg-red-600 hover:bg-red-700'
-                            );
-                        }
-                    });
-                });
+            if (myApps.length === 0) {
+                myAppointments.innerHTML = '<p class="text-gray-500 text-center p-4">Anda belum memiliki janji temu.</p>';
+                return;
             }
+
+            myApps.sort((a, b) => new Date(b.date) - new Date(a.date)).forEach(app => {
+                const appDiv = document.createElement('div');
+                let statusClass = '';
+                let statusText = '';
+
+                switch (app.status) {
+                    case 'pending':
+                        statusClass = 'bg-amber-100 border-amber-400 text-amber-800';
+                        statusText = 'Menunggu Persetujuan';
+                        break;
+                    case 'approved':
+                        statusClass = 'bg-green-100 border-green-400 text-green-800';
+                        statusText = 'Disetujui';
+                        break;
+                    case 'rejected':
+                        statusClass = 'bg-red-100 border-red-400 text-red-800';
+                        statusText = 'Ditolak';
+                        break;
+                    default:
+                        statusClass = 'bg-gray-100 border-gray-400 text-gray-800';
+                        statusText = 'Tidak Diketahui';
+                }
+
+                const actionButtonHTML = (() => {
+                    if (app.status === 'pending') {
+                        return `<button class="action-btn text-xs text-red-600 hover:underline font-semibold" data-action="cancel" data-appid="${app.id}">Batalkan</button>`;
+                    }
+                    if (app.status === 'rejected') {
+                        return `<button class="action-btn text-xs text-gray-600 hover:underline font-semibold" data-action="delete" data-appid="${app.id}">Hapus Riwayat</button>`;
+                    }
+                    return '';
+                })();
+
+                appDiv.className = `p-3 rounded-lg border-l-4 ${statusClass} shadow-sm`;
+                appDiv.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="font-bold">${app.teachername} - ${app.timeslot}</p>
+                            <p class="text-xs font-medium">${statusText}</p>
+                        </div>
+                        ${actionButtonHTML}
+                    </div>
+                `;
+                myAppointments.appendChild(appDiv);
+            });
+
+            // Add event listeners for the new action buttons
+            document.querySelectorAll('#my-appointments .action-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const appId = e.target.dataset.appid;
+                    const action = e.target.dataset.action;
+                    const app = localAppointmentsCache.find(a => a.id == appId);
+
+                    if (action === 'cancel') {
+                         showGenericConfirmation(
+                            'Batalkan Janji Temu',
+                            `Anda yakin ingin membatalkan janji temu dengan <strong>${app.teachername}</strong> pada jam <strong>${app.timeslot}</strong>?`,
+                            () => handleCancelAppointment(appId)
+                        );
+                    } else if (action === 'delete') {
+                         showGenericConfirmation(
+                            'Hapus Riwayat',
+                            `Anda yakin ingin menghapus riwayat janji temu yang ditolak ini?`,
+                            () => handleDeleteAppointmentHistory(appId),
+                            'bg-gray-600 hover:bg-gray-700'
+                        );
+                    }
+                });
+            });
         }
         
         async function handleCancelAppointment(appId) {
@@ -750,6 +779,24 @@
                 renderMyAppointments();
                 renderAppointmentSlots();
                 showAlert('Janji temu berhasil dibatalkan.', 'success');
+            }
+        }
+        
+        async function handleDeleteAppointmentHistory(appId) {
+            const { error } = await supabaseClient.from('appointments').delete().eq('id', appId);
+
+            if (error) {
+                showAlert('Gagal menghapus riwayat janji temu.', 'error');
+                console.error('Error deleting appointment history:', error);
+            } else {
+                localAppointmentsCache = localAppointmentsCache.filter(app => app.id != appId);
+                // Re-render based on current role
+                if (currentRole === 'user') {
+                    renderMyAppointments();
+                } else if (currentRole === 'admin') {
+                    renderAdminAppointments();
+                }
+                showAlert('Riwayat janji temu berhasil dihapus.', 'success');
             }
         }
         
@@ -792,7 +839,7 @@
                 categoryDiv.className = 'mb-8 p-6 bg-white rounded-xl shadow-xl';
                 categoryDiv.innerHTML = `<h3 class="text-xl font-extrabold text-indigo-700 mb-4 border-b pb-2">Kategori: ${category} (${grouped[category].length})</h3>`;
                 
-                grouped[category].sort((a, b) => a.timeSlot.localeCompare(b.timeSlot)).forEach((app) => {
+                grouped[category].sort((a, b) => a.timeslot.localeCompare(b.timeslot)).forEach((app) => {
                     const statusClass = app.status === 'approved' ? 'bg-indigo-50 border-indigo-400' : 
                                         (app.status === 'rejected' ? 'bg-red-50 border-red-400' : 'bg-amber-50 border-amber-400');
                     
@@ -803,10 +850,10 @@
                     if (app.status === 'pending') {
                         buttonsHTML = `
                             <div class="flex space-x-2 mt-3">
-                                <button class="approve-btn py-1 px-3 bg-green-600 hover:bg-green-700 text-white text-sm font-semibold rounded-lg transition-colors" data-appid="${app.id}">
+                                <button class="approve-btn admin-action-btn py-1 px-3 bg-green-600 hover:bg-green-700 text-white text-sm font-semibold rounded-lg transition-colors" data-appid="${app.id}" data-action="approved">
                                     ✅ Setuju
                                 </button>
-                                <button class="reject-btn py-1 px-3 bg-red-600 hover:bg-red-700 text-white text-sm font-semibold rounded-lg transition-colors" data-appid="${app.id}">
+                                <button class="reject-btn admin-action-btn py-1 px-3 bg-red-600 hover:bg-red-700 text-white text-sm font-semibold rounded-lg transition-colors" data-appid="${app.id}" data-action="rejected">
                                     ❌ Tolak
                                 </button>
                             </div>
@@ -815,14 +862,18 @@
                          buttonsHTML = `<div class="flex items-center space-x-3 mt-2">
                             <p class="text-sm font-semibold ${app.status === 'approved' ? 'text-indigo-600' : 'text-red-600'}">Status: ${app.status.toUpperCase()}</p>
                             ${app.status === 'approved' ? `
-                            <button class="finish-appointment-btn py-1 px-3 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg transition-colors" data-appid="${app.id}">
+                            <button class="admin-action-btn py-1 px-3 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg transition-colors" data-appid="${app.id}" data-action="finish">
                                 ✔️ Selesai
+                            </button>` : ''}
+                            ${app.status === 'rejected' ? `
+                            <button class="admin-action-btn py-1 px-3 bg-gray-500 hover:bg-gray-600 text-white text-xs font-semibold rounded-lg transition-colors" data-appid="${app.id}" data-action="delete">
+                                🗑️ Hapus
                             </button>` : ''}
                          </div>`;
                     }
 
                     appDiv.innerHTML = `
-                        <p class="font-bold text-lg">${app.timeSlot} | ${app.studentName} (dengan ${app.counselorName})</p>
+                        <p class="font-bold text-lg">${app.timeslot} | ${app.studentname} (dengan ${app.teachername})</p>
                         <p class="text-sm text-gray-700 italic">Detail: ${app.reason}</p>
                         ${buttonsHTML}
                     `;
@@ -831,33 +882,36 @@
                 adminAppointmentList.appendChild(categoryDiv);
             });
             
-            document.querySelectorAll('.approve-btn, .reject-btn').forEach(btn => {
+            document.querySelectorAll('#admin-appointment-list .admin-action-btn').forEach(btn => {
                 btn.addEventListener('click', (e) => {
-                    const appId = e.target.dataset.appid;
+                    const appId = e.currentTarget.dataset.appid;
+                    const action = e.currentTarget.dataset.action;
                     const app = localAppointmentsCache.find(a => a.id == appId);
-                    const action = e.target.classList.contains('approve-btn') ? 'approved' : 'rejected';
-                    const actionText = action === 'approved' ? 'menyetujui' : 'menolak';
-                    const btnClass = action === 'approved' ? 'bg-green-600 hover:bg-green-700' : 'bg-red-600 hover:bg-red-700';
 
-                    showGenericConfirmation(
-                        `Konfirmasi Janji Temu`,
-                        `Yakin ingin **${actionText}** janji temu ${app.studentName} pada ${app.timeSlot}?`,
-                        () => handleAdminAction(appId, action),
-                        btnClass
-                    );
-                });
-            });
-
-            document.querySelectorAll('.finish-appointment-btn').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    const appId = e.target.dataset.appid;
-                    const app = localAppointmentsCache.find(a => a.id == appId);
-                    showGenericConfirmation(
-                        'Selesaikan Janji Temu',
-                        `Menyelesaikan janji temu dengan **${app.studentName}** akan menghapus riwayat ini dan membuka kembali slot waktu. Lanjutkan?`,
-                        () => handleFinishAppointment(appId),
-                        'bg-blue-600 hover:bg-blue-700'
-                    );
+                    if (action === 'approved' || action === 'rejected') {
+                        const actionText = action === 'approved' ? 'menyetujui' : 'menolak';
+                        const btnClass = action === 'approved' ? 'bg-green-600 hover:bg-green-700' : 'bg-red-600 hover:bg-red-700';
+                        showGenericConfirmation(
+                            `Konfirmasi Janji Temu`,
+                            `Yakin ingin **${actionText}** janji temu ${app.studentname} pada ${app.timeslot}?`,
+                            () => handleAdminAction(appId, action),
+                            btnClass
+                        );
+                    } else if (action === 'finish') {
+                         showGenericConfirmation(
+                            'Selesaikan Janji Temu',
+                            `Menyelesaikan janji temu dengan **${app.studentname}** akan menghapus riwayat ini dan membuka kembali slot waktu. Lanjutkan?`,
+                            () => handleFinishAppointment(appId),
+                            'bg-blue-600 hover:bg-blue-700'
+                        );
+                    } else if (action === 'delete') {
+                        showGenericConfirmation(
+                            'Hapus Riwayat Janji Temu',
+                            `Yakin ingin menghapus riwayat janji temu yang ditolak untuk **${app.studentname}**?`,
+                            () => handleDeleteAppointmentHistory(appId),
+                            'bg-gray-600 hover:bg-gray-700'
+                        );
+                    }
                 });
             });
         }
@@ -868,8 +922,8 @@
             if (status === 'approved') {
                 const conflictExists = localAppointmentsCache.some(otherApp => 
                     otherApp.id != appId &&
-                    otherApp.counselorName === app.counselorName &&
-                    otherApp.timeSlot === app.timeSlot &&
+                    otherApp.teachername === app.teachername &&
+                    otherApp.timeslot === app.timeslot &&
                     otherApp.status === 'approved' &&
                     new Date(otherApp.date).toDateString() === new Date(app.date).toDateString()
                 );
@@ -899,7 +953,7 @@
             } else {
                 localAppointmentsCache = localAppointmentsCache.filter(a => a.id != appId);
                 renderAdminAppointments();
-                showAlert(`Janji temu dengan **${app.studentName}** telah selesai.`, 'success');
+                showAlert(`Janji temu dengan **${app.studentname}** telah selesai.`, 'success');
             }
         }
 
@@ -1011,8 +1065,8 @@
             else {
                 localUsersCache = localUsersCache.filter(u => u.id != userId);
                 // Also delete their appointments
-                await supabaseClient.from('appointments').delete().eq('studentName', userName);
-                localAppointmentsCache = localAppointmentsCache.filter(a => a.studentName !== userName);
+                await supabaseClient.from('appointments').delete().eq('studentname', userName);
+                localAppointmentsCache = localAppointmentsCache.filter(a => a.studentname !== userName);
                 renderAllAccounts();
                 showAlert(`Akun **${userName}** berhasil dihapus.`, 'success');
             }
@@ -1224,5 +1278,4 @@
     </script>
 </body>
 </html>
-
 
