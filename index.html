@@ -3,9 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BKita - Bimbingan Konseling Online</title>
-    <!-- Supabase JS Client -->
+    <title>BKita - Bimbingan Konseling Online (Supabase)</title>
+    <!-- 1. Impor Supabase Client -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Google Fonts - Inter -->
@@ -43,7 +44,7 @@
             @apply cursor-not-allowed opacity-75;
         }
         .modal {
-            @apply fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-40;
+            @apply fixed inset-0 z-50 flex items-start justify-center p-4 pt-20 bg-black bg-opacity-40; /* Diubah: items-center -> items-start, ditambah pt-20 */
         }
         /* Style for the new modern logo */
         .logo-bkita-container {
@@ -101,7 +102,7 @@
                 </svg>
             </div>
             <h1 class="text-4xl font-extrabold text-center text-gray-800 mb-2">BKita</h1>
-            <p class="text-center text-gray-500 mb-10">Platform Bimbingan Konseling Digital Sekolah Anda</p>
+            <p class="text-center text-gray-500 mb-10">Platform Bimbingan Konseling Digital Sekolah Anda (Database)</p>
             <div class="space-y-4 max-w-sm mx-auto">
                 <button id="show-student-login-btn" class="w-full py-4 px-6 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg shadow-blue-200/50 transition-all duration-300 transform hover:scale-[1.01]">
                     Masuk Sebagai Siswa
@@ -121,7 +122,7 @@
             <p class="text-center text-gray-600 mb-8">Masukkan nama dan password untuk akses ke layanan BK.</p>
             <div class="space-y-4 max-w-sm mx-auto">
                 <input type="text" id="student-name-input" placeholder="Nama Anda (cth: Budi)" class="w-full p-4 rounded-xl border border-gray-200 focus:outline-none focus:ring-4 focus:ring-blue-100 transition-shadow">
-                <input type="password" id="student-password-input" placeholder="Password" class="w-full p-4 rounded-xl border border-gray-200 focus:outline-none focus:ring-4 focus:ring-blue-100 transition-shadow">
+                <input type="password" id="student-password-input" placeholder="Password (cth: 123)" class="w-full p-4 rounded-xl border border-gray-200 focus:outline-none focus:ring-4 focus:ring-blue-100 transition-shadow">
                 <button id="student-login-btn" class="w-full py-4 px-6 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-md transition-colors duration-300">
                     Masuk
                 </button>
@@ -137,7 +138,7 @@
             <p class="text-center text-gray-600 mb-8">Masukkan nama dan password Anda.</p>
             <div class="space-y-4 max-w-sm mx-auto">
                 <input type="text" id="admin-name-input" placeholder="Nama Admin (Gofar/Rohman)" class="w-full p-4 rounded-xl border border-gray-200 focus:outline-none focus:ring-4 focus:ring-blue-100 transition-shadow">
-                <input type="password" id="admin-password" placeholder="Password" class="w-full p-4 rounded-xl border border-gray-200 focus:outline-none focus:ring-4 focus:ring-blue-100 transition-shadow">
+                <input type="password" id="admin-password" placeholder="Password (cth: 123)" class="w-full p-4 rounded-xl border border-gray-200 focus:outline-none focus:ring-4 focus:ring-blue-100 transition-shadow">
                 <button id="admin-login-btn" class="w-full py-4 px-6 bg-gray-700 hover:bg-gray-800 text-white font-bold rounded-xl shadow-md transition-colors duration-300">
                     Masuk
                 </button>
@@ -152,8 +153,8 @@
             <h1 class="text-3xl font-bold text-center text-gray-800 mb-4">Masuk Super Admin</h1>
             <p class="text-center text-gray-600 mb-8">Area ini hanya untuk Super Admin.</p>
             <div class="space-y-4 max-w-sm mx-auto">
-                <input type="text" id="super-admin-name-input" placeholder="Nama Super Admin" class="w-full p-4 rounded-xl border border-gray-200 focus:outline-none focus:ring-4 focus:ring-red-100 transition-shadow">
-                <input type="password" id="super-admin-password" placeholder="Password" class="w-full p-4 rounded-xl border border-gray-200 focus:outline-none focus:ring-4 focus:ring-red-100 transition-shadow">
+                <input type="text" id="super-admin-name-input" placeholder="Nama Super Admin (cth: Super)" class="w-full p-4 rounded-xl border border-gray-200 focus:outline-none focus:ring-4 focus:ring-red-100 transition-shadow">
+                <input type="password" id="super-admin-password" placeholder="Password (cth: 123)" class="w-full p-4 rounded-xl border border-gray-200 focus:outline-none focus:ring-4 focus:ring-red-100 transition-shadow">
                 <button id="super-admin-login-btn" class="w-full py-4 px-6 bg-red-700 hover:bg-red-800 text-white font-bold rounded-xl shadow-md transition-colors duration-300">
                     Masuk
                 </button>
@@ -183,6 +184,10 @@
                 <button id="tab-articles" class="flex-1 py-2 px-4 whitespace-nowrap text-center text-sm font-medium focus:outline-none transition-all duration-300 text-gray-600 hover:bg-white hover:shadow-sm rounded-lg">
                     🧠 Materi Motivasi
                 </button>
+                <!-- Tombol Tab Baru untuk Siswa -->
+                <button id="tab-followup" class="flex-1 py-2 px-4 whitespace-nowrap text-center text-sm font-medium focus:outline-none transition-all duration-300 text-gray-600 hover:bg-white hover:shadow-sm rounded-lg">
+                    📝 Tindak Lanjut
+                </button>
                  <button id="tab-change-password" class="flex-1 py-2 px-4 whitespace-nowrap text-center text-sm font-medium focus:outline-none transition-all duration-300 text-gray-600 hover:bg-white hover:shadow-sm rounded-lg">
                     🔑 Ganti Password
                 </button>
@@ -195,30 +200,46 @@
                     <h2 class="text-2xl font-extrabold mb-6 text-gray-800">Pilih Waktu Konseling</h2>
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                         <div class="p-6 bg-gray-50 rounded-xl border border-gray-100 shadow-lg col-span-1 lg:col-span-2">
-                            <h3 class="font-bold text-xl mb-4 text-gray-700">Jadwal Guru BK Hari Ini</h3>
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <!-- Gofar Slots -->
-                                <div class="p-4 bg-white rounded-lg shadow-inner">
-                                    <h4 class="font-bold text-lg mb-3 border-b pb-2 text-teal-600">Bapak Gofar</h4>
-                                    <div id="gofar-slots" class="grid grid-cols-2 gap-2 text-sm">
-                                        <!-- Slots for Gofar will be rendered here -->
-                                    </div>
-                                </div>
-                                <!-- Rohman Slots -->
-                                <div class="p-4 bg-white rounded-lg shadow-inner">
-                                    <h4 class="font-bold text-lg mb-3 border-b pb-2 text-teal-600">Bapak Rohman</h4>
-                                    <div id="rohman-slots" class="grid grid-cols-2 gap-2 text-sm">
-                                        <!-- Slots for Rohman will be rendered here -->
-                                    </div>
-                                </div>
+                            <h3 class="font-bold text-xl mb-4 text-gray-700">Jadwal Konseling Hari Ini</h3>
+                            <div id="unified-slots-container" class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                                <!-- Slots will be rendered here by JS -->
                             </div>
                         </div>
 
-                        <!-- Status Appointment -->
+                        <!-- Status & Confirmation Panel -->
                         <div class="p-6 bg-white rounded-xl shadow-lg border-t-4 border-indigo-500">
-                            <h3 class="font-extrabold text-xl mb-4 text-indigo-700">Status Janji Temu Anda</h3>
+                            <h3 id="my-appointments-title" class="font-extrabold text-xl mb-4 text-indigo-700">Status Janji Temu Anda</h3>
+                            
+                            <!-- Area 1: My Appointments (Default) -->
                             <div id="my-appointments" class="space-y-3">
                                 <!-- My appointments will be rendered here -->
+                            </div>
+                            
+                            <!-- Area 2: Booking Confirmation (Hidden by default) -->
+                            <div id="appointment-confirmation-form" class="hidden space-y-4">
+                                <!-- This form will be populated by JS -->
+                                <label class="block text-sm font-medium text-gray-700 -mb-2">Pilih Guru BK <span class="text-red-500">*</span></label>
+                                <div id="booking-form-teacher-list" class="space-y-2 p-3 bg-gray-100 rounded-lg max-h-32 overflow-y-auto">
+                                    <!-- Teacher radio buttons will be injected here by JS -->
+                                </div>
+                
+                                <label for="booking-form-category" class="block text-sm font-medium text-gray-700 -mb-2">Kategori Masalah <span class="text-red-500">*</span></label>
+                                <select id="booking-form-category" class="w-full p-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+                                    <option value="">-- Pilih Kategori --</option>
+                                    <option value="Akademik">Akademik (Nilai, Belajar, Jurusan)</option>
+                                    <option value="Sosial">Sosial (Pergaulan, Konflik, Perundungan)</option>
+                                    <option value="Karir/Masa Depan">Karir/Masa Depan (Pilihan Universitas/Kerja)</option>
+                                    <option value="Pribadi">Pribadi (Emosi, Stres, Keluarga)</option>
+                                    <option value="Lainnya">Lainnya</option>
+                                </select>
+
+                                <label for="booking-form-reason" class="block text-sm font-medium text-gray-700 -mb-2">Detail Singkat (Opsional)</label>
+                                <textarea id="booking-form-reason" placeholder="Jelaskan secara singkat (Opsional)..." rows="3" class="w-full p-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+
+                                <div class="flex justify-end space-x-4">
+                                    <button id="booking-form-cancel-btn" class="py-2 px-4 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold rounded-xl transition-colors">Batal</button>
+                                    <button id="booking-form-confirm-btn" class="py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl transition-colors">Konfirmasi</button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -245,6 +266,14 @@
                     <h2 class="text-2xl font-extrabold mb-6 text-gray-800">Materi Pengembangan Diri & Inspirasi</h2>
                     <div id="article-list" class="space-y-6">
                         <!-- Articles will be rendered here -->
+                    </div>
+                </div>
+                
+                <!-- Konten Tab Baru untuk Siswa -->
+                <div id="content-followup" class="tab-content hidden">
+                    <h2 class="text-2xl font-extrabold mb-6 text-gray-800">Catatan Sesi & Tindak Lanjut</h2>
+                    <div id="followup-list" class="space-y-6">
+                        <!-- Catatan tindak lanjut akan dirender di sini oleh JS -->
                     </div>
                 </div>
                 
@@ -276,7 +305,11 @@
             <!-- Tab Navigation for Admin (Pills style) - Kelola Akun REMOVED -->
             <div class="flex bg-gray-100 p-1 rounded-xl mb-8 overflow-x-auto">
                 <button id="admin-tab-appointments" class="flex-1 py-2 px-4 whitespace-nowrap text-center text-sm font-semibold transition-all duration-300 rounded-lg bg-white shadow-sm text-blue-600">
-                    🛎️ Permintaan Janji Temu
+                    🛎️ Daftar Tugas (Janji Temu)
+                </button>
+                <!-- Tombol Tab Baru untuk Riwayat -->
+                <button id="admin-tab-history" class="flex-1 py-2 px-4 whitespace-nowrap text-center text-sm font-medium focus:outline-none transition-all duration-300 text-gray-600 hover:bg-white hover:shadow-sm rounded-lg">
+                    📚 Riwayat Siswa
                 </button>
                 <button id="admin-tab-add-article" class="flex-1 py-2 px-4 whitespace-nowrap text-center text-sm font-medium focus:outline-none transition-all duration-300 text-gray-600 hover:bg-white hover:shadow-sm rounded-lg">
                     ✍️ Tambah Materi
@@ -290,9 +323,19 @@
             <div id="admin-tab-content">
                 <!-- Admin Tab Janji Temu -->
                 <div id="admin-content-appointments" class="tab-content">
-                    <h2 class="text-2xl font-extrabold mb-6 text-gray-800">Kelola Permintaan Janji Temu Berdasarkan Kategori</h2>
+                    <h2 class="text-2xl font-extrabold mb-6 text-gray-800">Daftar Tugas Janji Temu (Hari Ini)</h2>
                     <div id="admin-appointment-list" class="space-y-4">
                         <!-- Appointment requests will be rendered here grouped by category -->
+                    </div>
+                </div>
+
+                <!-- Admin Tab Riwayat Siswa (Baru) -->
+                <div id="admin-content-history" class="tab-content hidden">
+                    <h2 class="text-2xl font-extrabold mb-4 text-gray-800">Cari Riwayat Siswa</h2>
+                    <p class="text-gray-600 mb-6">Cari nama siswa untuk melihat seluruh riwayat janji temu dan catatan tindak lanjut Anda.</p>
+                    <input type="text" id="student-search-input" placeholder="Ketik nama siswa untuk mencari..." class="w-full p-4 rounded-xl border border-gray-200 focus:outline-none focus:ring-4 focus:ring-blue-100 transition-shadow mb-6">
+                    <div id="student-history-list" class="space-y-4 max-h-[600px] overflow-y-auto">
+                        <!-- Riwayat siswa akan dirender di sini -->
                     </div>
                 </div>
 
@@ -369,30 +412,8 @@
 
 
         <!-- 1. Confirmation Modal (for Booking - with Category and Optional Reason) -->
-        <div id="booking-confirmation-modal" class="modal hidden">
-            <div class="bg-white rounded-2xl p-8 shadow-2xl max-w-lg w-full transform transition-all">
-                <h3 class="text-2xl font-bold mb-4 text-blue-600">Konfirmasi Janji Temu</h3>
-                <p id="booking-modal-text" class="text-gray-700 mb-6">Pilih kategori masalah utama Anda. Detail singkat adalah opsional.</p>
-                
-                <label for="appointment-category-select" class="block text-sm font-medium text-gray-700 mb-1">Kategori Masalah <span class="text-red-500">* Wajib</span></label>
-                <select id="appointment-category-select" class="w-full p-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4">
-                    <option value="">-- Pilih Kategori --</option>
-                    <option value="Akademik">Akademik (Nilai, Belajar, Jurusan)</option>
-                    <option value="Sosial">Sosial (Pergaulan, Konflik, Perundungan)</option>
-                    <option value="Karir/Masa Depan">Karir/Masa Depan (Pilihan Universitas/Kerja)</option>
-                    <option value="Pribadi">Pribadi (Emosi, Stres, Keluarga)</option>
-                    <option value="Lainnya">Lainnya</option>
-                </select>
-
-                <label for="appointment-reason-input" class="block text-sm font-medium text-gray-700 mb-1">Detail Singkat (Opsional)</label>
-                <textarea id="appointment-reason-input" placeholder="Jelaskan secara singkat atau detail (Opsional)..." rows="3" class="w-full p-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 mb-6"></textarea>
-
-                <div class="flex justify-end space-x-4">
-                    <button id="booking-modal-cancel-btn" class="py-2 px-4 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold rounded-xl transition-colors">Batal</button>
-                    <button id="booking-modal-confirm-btn" class="py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl transition-colors">Konfirmasi</button>
-                </div>
-            </div>
-        </div>
+        <!-- MODAL INI DIHAPUS -->
+        <!-- <div id="booking-confirmation-modal" class="modal hidden"> ... </div> -->
         
         <!-- 2. Generic Confirmation Modal (For Cancel/Reject Actions - No input) -->
         <div id="generic-confirmation-modal" class="modal hidden">
@@ -419,26 +440,44 @@
     </div>
 
     <script>
-        // --- Supabase Client Initialization ---
-        // !!! PENTING: Ganti dengan URL dan Kunci ANON Proyek Supabase Anda !!!
-        const SUPABASE_URL = 'https://itxihpvquaurkgwussyz.supabase.co'; // Ganti dengan URL Proyek Anda
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml0eGlocHZxdWF1cmtnd3Vzc3l6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA5NzAyMTcsImV4cCI6MjA3NjU0NjIxN30.tsGt4BTB5orGiv-PXizQCWgk3iWXgiM6L_QxyEDNXbs'; // Ganti dengan Kunci ANON Anda
+        // --- 2. Inisialisasi Supabase Client ---
+        // PASTE URL DAN ANON KEY ANDA DI SINI
+        const SUPABASE_URL = 'https://itxihpvquaurkgwussyz.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_ELLk3Md-AzLMbvJH06tABA_gHS0FFEZ';
+        
+        // Periksa apakah placeholder telah diisi
+        if (SUPABASE_URL === 'https://MASUKKAN_URL_ANDA.supabase.co') {
+             const alertModal = document.getElementById('alert-modal');
+             const alertText = document.getElementById('alert-text');
+             const alertTitle = document.getElementById('alert-title');
+             
+             alertTitle.textContent = "Kesalahan Konfigurasi";
+             alertTitle.className = "text-xl font-bold mb-4 text-red-600";
+             alertText.innerHTML = "Anda belum memasukkan <strong>SUPABASE_URL</strong> dan <strong>SUPABASE_KEY</strong> di dalam kode JavaScript (baris 610-611).<br><br>Silakan edit file index.html dan masukkan kunci API Anda.";
+             
+             document.getElementById('loading-overlay').classList.add('hidden');
+             document.getElementById('app-container').classList.remove('hidden');
+             document.getElementById('login-view').classList.add('hidden');
+             alertModal.classList.remove('hidden');
+        }
+
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         // --- Global State Variables ---
         let currentUser = null;
+        let currentUserId = null; // Kita simpan ID pengguna juga
         let currentRole = null;
         const DEFAULT_ACCOUNT_PASSWORD = '12345'; 
 
-        let pendingAppointment = null;
+        let currentBookingSlot = null;
         let genericActionCallback = null; // Store the callback function for generic confirmation
 
-        // Data from Supabase will be stored here
-        let localUsersCache = [];
-        let localAppointmentsCache = [];
-        let localArticlesCache = [];
+        // --- DATA LOKAL DIHAPUS ---
+        // let localUsersCache = [...];
+        // let localAppointmentsCache = [...];
+        // let localArticlesCache = [...];
         
-        // Counselor WhatsApp numbers
+        // Counselor WhatsApp numbers (tetap lokal)
         const gofarNumber = '6283147559807'; 
         const rohmanNumber = '6281388464385';
 
@@ -458,8 +497,7 @@
         const adminNameHeader = document.getElementById('admin-name-header');
         const superAdminNameHeader = document.getElementById('super-admin-name-header');
 
-        const gofarSlots = document.getElementById('gofar-slots');
-        const rohmanSlots = document.getElementById('rohman-slots');
+        const unifiedSlotsContainer = document.getElementById('unified-slots-container');
         const myAppointments = document.getElementById('my-appointments');
 
         const adminAppointmentList = document.getElementById('admin-appointment-list');
@@ -467,13 +505,15 @@
         
         const createNewAccountBtn = document.getElementById('create-new-account-btn');
 
-        const bookingConfirmationModal = document.getElementById('booking-confirmation-modal');
-        const bookingModalText = document.getElementById('booking-modal-text');
-        const bookingModalConfirmBtn = document.getElementById('booking-modal-confirm-btn');
-        const bookingModalCancelBtn = document.getElementById('booking-modal-cancel-btn');
-        const appointmentCategorySelect = document.getElementById('appointment-category-select'); 
-        const appointmentReasonInput = document.getElementById('appointment-reason-input');
-        
+        // Elemen Form Konfirmasi Sisi Kanan (Baru)
+        const myAppointmentsTitle = document.getElementById('my-appointments-title');
+        const appointmentConfirmationForm = document.getElementById('appointment-confirmation-form');
+        const bookingFormTeacherList = document.getElementById('booking-form-teacher-list');
+        const bookingFormCategory = document.getElementById('booking-form-category');
+        const bookingFormReason = document.getElementById('booking-form-reason');
+        const bookingFormConfirmBtn = document.getElementById('booking-form-confirm-btn');
+        const bookingFormCancelBtn = document.getElementById('booking-form-cancel-btn');
+
         const genericConfirmationModal = document.getElementById('generic-confirmation-modal');
         const genericModalTitle = document.getElementById('generic-modal-title');
         const genericModalText = document.getElementById('generic-modal-text');
@@ -494,20 +534,6 @@
             
             document.querySelectorAll('.view').forEach(view => view.classList.add('hidden'));
             document.getElementById(viewId).classList.remove('hidden');
-        }
-
-        async function fetchAllData() {
-            const { data: usersData, error: usersError } = await supabaseClient.from('users').select('*');
-            if (usersError) console.error('Error fetching users:', usersError);
-            else localUsersCache = usersData;
-            
-            const { data: articlesData, error: articlesError } = await supabaseClient.from('articles').select('*');
-            if (articlesError) console.error('Error fetching articles:', articlesError);
-            else localArticlesCache = articlesData;
-
-            const { data: appointmentsData, error: appointmentsError } = await supabaseClient.from('appointments').select('*');
-            if (appointmentsError) console.error('Error fetching appointments:', appointmentsError);
-            else localAppointmentsCache = appointmentsData;
         }
 
         // Custom Alert function to replace browser alert()
@@ -587,99 +613,161 @@
             return slots;
         }
 
-        function renderAppointmentSlots() {
+        async function renderAppointmentSlots() {
             const slots = getAppointmentSlots();
-            gofarSlots.innerHTML = '';
-            rohmanSlots.innerHTML = '';
+            unifiedSlotsContainer.innerHTML = '';
 
-            const todayAppointments = localAppointmentsCache.filter(app => new Date(app.date).toDateString() === new Date().toDateString());
-            
+            const todayISO = new Date().toISOString().split('T')[0];
+
+            // Ambil data janji temu hari ini dari Supabase
+            const { data: todayAppointments, error: appError } = await supabaseClient
+                .from('appointments')
+                .select('studentname, teachername, timeslot, status')
+                .eq('date', todayISO);
+
+            if (appError) {
+                showAlert(`Gagal memuat slot: ${appError.message}`, 'error');
+                return;
+            }
+
             const hasPendingAppointment = todayAppointments.some(app => app.studentname === currentUser && app.status === 'pending');
+            
+            // Ambil semua guru BK (admin) dari Supabase
+            const { data: teachersData, error: teacherError } = await supabaseClient
+                .from('users')
+                .select('name')
+                .eq('role', 'admin');
+            
+            if (teacherError) {
+                showAlert(`Gagal memuat data guru: ${teacherError.message}`, 'error');
+                return;
+            }
+            
+            const allTeachers = teachersData.map(u => u.name);
 
-            ['Gofar', 'Rohman'].forEach(counselor => {
-                const container = counselor === 'Gofar' ? gofarSlots : rohmanSlots;
-                slots.forEach(slot => {
-                    const approvedAppointment = todayAppointments.find(
-                        app => app.teachername === counselor && app.timeslot === slot && app.status === 'approved'
-                    );
-                    
-                    const btn = document.createElement('button');
-                    btn.textContent = slot;
-                    btn.className = `w-full py-2 px-1 rounded-lg font-semibold text-sm transition-all duration-300 shadow-sm`;
-                    
-                    if (approvedAppointment) {
-                        btn.disabled = true;
-                        btn.classList.add('slot-approved');
-                        btn.textContent = `${slot} (Terisi)`;
-                    } else if (hasPendingAppointment) {
-                        btn.disabled = true;
-                        btn.classList.add('bg-gray-300', 'text-gray-600', 'cursor-not-allowed');
-                        btn.title = 'Anda sudah memiliki permintaan janji temu yang menunggu persetujuan.';
-                    } else {
-                        btn.classList.add('slot-available');
-                        btn.onclick = () => showBookingConfirmation(counselor, slot);
-                    }
-                    container.appendChild(btn);
-                });
+            slots.forEach(slot => {
+                const approvedAppsForSlot = todayAppointments.filter(
+                    app => app.timeslot === slot && app.status === 'approved'
+                );
+                
+                const availableTeachers = allTeachers.filter(
+                    teacher => !approvedAppsForSlot.some(app => app.teachername === teacher)
+                );
+                
+                const btn = document.createElement('button');
+                btn.textContent = slot;
+                btn.className = `w-full py-3 px-1 rounded-lg font-semibold text-sm transition-all duration-300 shadow-sm`;
+                
+                if (hasPendingAppointment) {
+                    btn.disabled = true;
+                    btn.classList.add('bg-gray-300', 'text-gray-600', 'cursor-not-allowed');
+                    btn.title = 'Anda sudah memiliki permintaan janji temu yang menunggu persetujuan.';
+                } else if (availableTeachers.length === 0) {
+                    btn.disabled = true;
+                    btn.classList.add('slot-approved');
+                    btn.textContent = `${slot} (Penuh)`;
+                } else {
+                    btn.classList.add('slot-available');
+                    btn.onclick = (e) => showBookingConfirmation(slot, availableTeachers, e.target);
+                }
+                unifiedSlotsContainer.appendChild(btn);
             });
         }
         
-        function showBookingConfirmation(counselorName, timeSlot) {
-            pendingAppointment = {
-                counselorName,
-                timeSlot,
-                studentName: currentUser,
-            };
-            bookingModalText.textContent = `Anda akan membuat janji temu dengan ${counselorName} pada jam ${timeSlot} WIB. Pilih kategori masalah dan jelaskan secara singkat (opsional).`;
+        function showBookingConfirmation(timeSlot, availableTeachers, clickedButton) {
+            if (currentBookingSlot === timeSlot) {
+                hideBookingConfirmation();
+                return;
+            }
             
-            appointmentCategorySelect.value = '';
-            appointmentReasonInput.value = '';
+            document.querySelectorAll('#unified-slots-container button').forEach(btn => {
+                btn.classList.remove('bg-indigo-700', 'text-white');
+                if (btn.classList.contains('slot-available')) {
+                     btn.classList.add('bg-teal-500', 'hover:bg-teal-600');
+                }
+            });
+            
+            clickedButton.classList.remove('bg-teal-500', 'hover:bg-teal-600');
+            clickedButton.classList.add('bg-indigo-700', 'text-white');
+            
+            currentBookingSlot = timeSlot;
+            
+            myAppointmentsTitle.textContent = `Konfirmasi: ${timeSlot} WIB`;
+            myAppointments.classList.add('hidden');
+            
+            bookingFormTeacherList.innerHTML = '';
+            availableTeachers.forEach((teacher, index) => {
+                const radioId = `teacher-${index}`;
+                bookingFormTeacherList.innerHTML += `
+                    <div class="flex items-center">
+                        <input id="${radioId}" name="teacher-select" type="radio" value="${teacher}" class="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500">
+                        <label for="${radioId}" class="ml-3 block text-sm font-medium text-gray-700">${teacher}</label>
+                    </div>
+                `;
+            });
 
-            bookingConfirmationModal.classList.remove('hidden');
+            bookingFormCategory.value = '';
+            bookingFormReason.value = '';
+
+            appointmentConfirmationForm.classList.remove('hidden');
         }
 
         function hideBookingConfirmation() {
-            bookingConfirmationModal.classList.add('hidden');
-            pendingAppointment = null;
-            appointmentCategorySelect.value = '';
-            appointmentReasonInput.value = '';
+            document.querySelectorAll('#unified-slots-container button').forEach(btn => {
+                btn.classList.remove('bg-indigo-700', 'text-white');
+                if (btn.classList.contains('slot-available')) {
+                     btn.classList.add('bg-teal-500', 'hover:bg-teal-600');
+                }
+            });
+            
+            currentBookingSlot = null;
+            
+            myAppointmentsTitle.textContent = 'Status Janji Temu Anda';
+            appointmentConfirmationForm.classList.add('hidden');
+            myAppointments.classList.remove('hidden');
+
+            bookingFormTeacherList.innerHTML = ''; 
+            bookingFormCategory.value = '';
+            bookingFormReason.value = '';
         }
 
         async function confirmAppointment() {
-            const category = appointmentCategorySelect.value; 
-            const reason = appointmentReasonInput.value.trim();
+            const category = bookingFormCategory.value; 
+            const reason = bookingFormReason.value.trim();
+            const selectedTeacherRadio = document.querySelector('#booking-form-teacher-list input[name="teacher-select"]:checked');
+            
+            if (!selectedTeacherRadio) {
+                showAlert('Anda wajib memilih **Guru BK**.', 'error');
+                return;
+            }
             
             if (!category) {
                 showAlert('Anda wajib memilih **Kategori Masalah**.', 'error');
                 return;
             }
+            
+            const selectedTeacher = selectedTeacherRadio.value;
 
-            if (pendingAppointment) {
-                const studentUser = localUsersCache.find(u => u.name === pendingAppointment.studentName);
-                const teacherUser = localUsersCache.find(u => u.name === pendingAppointment.counselorName);
-
-                if (!studentUser || !teacherUser) {
-                    showAlert('Gagal menemukan data pengguna. Silakan coba muat ulang halaman.', 'error');
-                    return;
-                }
-
+            if (currentBookingSlot) {
                 const newAppointmentData = {
-                    studentname: pendingAppointment.studentName,
-                    teachername: pendingAppointment.counselorName, 
-                    timeslot: pendingAppointment.timeSlot,
+                    studentname: currentUser,
+                    teachername: selectedTeacher, 
+                    timeslot: currentBookingSlot,
                     category: category, 
                     reason: reason || 'Tidak ada detail tambahan.', 
                     status: 'pending',
-                    date: new Date().toISOString(),
+                    date: new Date().toISOString().split('T')[0], // Simpan hanya tanggal (YYYY-MM-DD)
+                    followupnote: null
                 };
-
-                const { data, error } = await supabaseClient.from('appointments').insert([newAppointmentData]).select();
+                
+                // Kirim data ke Supabase
+                const { error } = await supabaseClient
+                    .from('appointments')
+                    .insert(newAppointmentData);
                 
                 if (error) {
-                    showAlert('Gagal mengajukan janji temu. Coba lagi.', 'error');
-                    console.error('Error inserting appointment:', error);
+                    showAlert(`Gagal membuat janji: ${error.message}`, 'error');
                 } else {
-                    localAppointmentsCache.push(data[0]);
                     renderMyAppointments();
                     renderAppointmentSlots(); 
                     hideBookingConfirmation();
@@ -688,16 +776,27 @@
             }
         }
 
-        function renderMyAppointments() {
+        async function renderMyAppointments() {
             myAppointments.innerHTML = '';
-            const myApps = localAppointmentsCache.filter(app => app.studentname === currentUser);
+            
+            // Ambil data janji temu untuk siswa ini dari Supabase
+            const { data: myApps, error } = await supabaseClient
+                .from('appointments')
+                .select('*')
+                .eq('studentname', currentUser)
+                .order('date', { ascending: false });
+
+            if (error) {
+                showAlert(`Gagal memuat janji temu: ${error.message}`, 'error');
+                return;
+            }
 
             if (myApps.length === 0) {
                 myAppointments.innerHTML = '<p class="text-gray-500 text-center p-4">Anda belum memiliki janji temu.</p>';
                 return;
             }
 
-            myApps.sort((a, b) => new Date(b.date) - new Date(a.date)).forEach(app => {
+            myApps.forEach(app => {
                 const appDiv = document.createElement('div');
                 let statusClass = '';
                 let statusText = '';
@@ -715,6 +814,10 @@
                         statusClass = 'bg-red-100 border-red-400 text-red-800';
                         statusText = 'Ditolak';
                         break;
+                    case 'completed':
+                        statusClass = 'bg-blue-100 border-blue-400 text-blue-800';
+                        statusText = 'Sesi Selesai';
+                        break;
                     default:
                         statusClass = 'bg-gray-100 border-gray-400 text-gray-800';
                         statusText = 'Tidak Diketahui';
@@ -724,7 +827,7 @@
                     if (app.status === 'pending') {
                         return `<button class="action-btn text-xs text-red-600 hover:underline font-semibold" data-action="cancel" data-appid="${app.id}">Batalkan</button>`;
                     }
-                    if (app.status === 'rejected') {
+                    if (app.status === 'rejected' || app.status === 'completed') {
                         return `<button class="action-btn text-xs text-gray-600 hover:underline font-semibold" data-action="delete" data-appid="${app.id}">Hapus Riwayat</button>`;
                     }
                     return '';
@@ -743,12 +846,13 @@
                 myAppointments.appendChild(appDiv);
             });
 
-            // Add event listeners for the new action buttons
             document.querySelectorAll('#my-appointments .action-btn').forEach(btn => {
                 btn.addEventListener('click', (e) => {
                     const appId = e.target.dataset.appid;
                     const action = e.target.dataset.action;
-                    const app = localAppointmentsCache.find(a => a.id == appId);
+                    
+                    // Kita perlu data 'app' lagi, cara mudahnya adalah cari di array 'myApps'
+                    const app = myApps.find(a => a.id == appId);
 
                     if (action === 'cancel') {
                          showGenericConfirmation(
@@ -757,10 +861,14 @@
                             () => handleCancelAppointment(appId)
                         );
                     } else if (action === 'delete') {
+                         const deleteText = app.status === 'completed' 
+                            ? `Anda yakin ingin menghapus riwayat sesi yang sudah **selesai** ini? (Catatan tindak lanjut juga akan hilang)`
+                            : `Anda yakin ingin menghapus riwayat janji temu yang ditolak ini?`;
+                            
                          showGenericConfirmation(
                             'Hapus Riwayat',
-                            `Anda yakin ingin menghapus riwayat janji temu yang ditolak ini?`,
-                            () => handleDeleteAppointmentHistory(appId),
+                            deleteText,
+                            () => handleDeleteAppointmentHistory(appId, 'user'), // tambahkan role
                             'bg-gray-600 hover:bg-gray-700'
                         );
                     }
@@ -769,41 +877,89 @@
         }
         
         async function handleCancelAppointment(appId) {
-            const { error } = await supabaseClient.from('appointments').delete().eq('id', appId);
+            const { error } = await supabaseClient
+                .from('appointments')
+                .delete()
+                .eq('id', appId);
 
             if (error) {
-                showAlert('Gagal membatalkan janji temu.', 'error');
-                console.error('Error canceling appointment:', error);
+                showAlert(`Gagal membatalkan: ${error.message}`, 'error');
             } else {
-                localAppointmentsCache = localAppointmentsCache.filter(app => app.id != appId);
                 renderMyAppointments();
                 renderAppointmentSlots();
                 showAlert('Janji temu berhasil dibatalkan.', 'success');
             }
         }
         
-        async function handleDeleteAppointmentHistory(appId) {
-            const { error } = await supabaseClient.from('appointments').delete().eq('id', appId);
+        async function handleDeleteAppointmentHistory(appId, role) {
+            const { error } = await supabaseClient
+                .from('appointments')
+                .delete()
+                .eq('id', appId);
 
             if (error) {
-                showAlert('Gagal menghapus riwayat janji temu.', 'error');
-                console.error('Error deleting appointment history:', error);
+                showAlert(`Gagal menghapus riwayat: ${error.message}`, 'error');
             } else {
-                localAppointmentsCache = localAppointmentsCache.filter(app => app.id != appId);
-                // Re-render based on current role
-                if (currentRole === 'user') {
+                if (role === 'user') {
                     renderMyAppointments();
-                } else if (currentRole === 'admin') {
-                    renderAdminAppointments();
+                } else if (role === 'admin') {
+                    renderStudentHistory(document.getElementById('student-search-input').value); // Re-render riwayat
                 }
                 showAlert('Riwayat janji temu berhasil dihapus.', 'success');
             }
         }
         
-        // --- Article Rendering ---
-        function renderArticles() {
+        async function renderFollowupNotes() {
+            const followupList = document.getElementById('followup-list');
+            followupList.innerHTML = '';
+            
+            const { data: myFollowups, error } = await supabaseClient
+                .from('appointments')
+                .select('*')
+                .eq('studentname', currentUser)
+                .eq('status', 'completed')
+                .order('date', { ascending: false });
+
+            if (error) {
+                showAlert(`Gagal memuat tindak lanjut: ${error.message}`, 'error');
+                return;
+            }
+
+            if (myFollowups.length === 0) {
+                followupList.innerHTML = '<p class="text-gray-500 text-center p-4 bg-gray-50 rounded-lg">Belum ada catatan tindak lanjut dari guru BK.</p>';
+                return;
+            }
+
+            myFollowups.forEach(app => {
+                const noteElement = document.createElement('div');
+                noteElement.className = 'p-6 bg-white rounded-xl shadow-lg border-l-4 border-blue-500 transition-all hover:shadow-md';
+                noteElement.innerHTML = `
+                    <div class="flex justify-between items-center mb-2">
+                         <h3 class="text-xl font-bold text-blue-700">Sesi dengan ${app.teachername}</h3>
+                         <span class="text-xs font-medium text-gray-500">${new Date(app.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'long' })}</span>
+                    </div>
+                    <p class="text-sm text-gray-500 mb-4">Kategori: ${app.category} | Waktu: ${app.timeslot}</p>
+                    <p class="text-gray-700 font-semibold mb-2">Catatan dari Guru:</p>
+                    <p class="text-gray-700 whitespace-pre-wrap bg-gray-50 p-4 rounded-lg border border-gray-200">${app.followupnote || 'Tidak ada catatan.'}</p>
+                `;
+                followupList.appendChild(noteElement);
+            });
+        }
+        
+        async function renderArticles() {
             articleList.innerHTML = '';
-            localArticlesCache.slice().reverse().forEach((article) => {
+            
+            const { data: articles, error } = await supabaseClient
+                .from('articles')
+                .select('*')
+                .order('created_at', { ascending: false });
+            
+            if (error) {
+                showAlert(`Gagal memuat artikel: ${error.message}`, 'error');
+                return;
+            }
+            
+            articles.forEach((article) => {
                 const articleElement = document.createElement('div');
                 articleElement.className = 'p-6 bg-white rounded-xl shadow-lg border-l-4 border-teal-500';
                 articleElement.innerHTML = `
@@ -817,20 +973,37 @@
         
         // --- Admin Functions ---
         
-        function renderAdminAppointments() {
+        async function renderAdminAppointments() {
             adminAppointmentList.innerHTML = '';
-            const today = new Date().toDateString();
-            const filteredAppointments = localAppointmentsCache.filter(app => new Date(app.date).toDateString() === today);
+            const today = new Date().toISOString().split('T')[0];
             
-            const grouped = filteredAppointments.reduce((acc, app) => {
-                const key = app.category;
-                if (!acc[key]) acc[key] = [];
-                acc[key].push(app);
-                return acc;
+            const { data: filteredAppointments, error } = await supabaseClient
+                .from('appointments')
+                .select('*')
+                .eq('teachername', currentUser)
+                .in('status', ['pending', 'approved']); // Ambil 'pending' ATAU 'approved'
+
+            if (error) {
+                showAlert(`Gagal memuat tugas: ${error.message}`, 'error');
+                return;
+            }
+            
+            const activeAppointments = filteredAppointments.filter(app => {
+                if (app.status === 'pending') {
+                    return app.date === today; // Hanya tampilkan 'pending' hari ini
+                }
+                return true; // Tampilkan semua yang 'approved' (walau dari hari lalu)
+            });
+
+            const grouped = activeAppointments.reduce((acc, app) => {
+                 const key = app.category;
+                 if (!acc[key]) acc[key] = [];
+                 acc[key].push(app);
+                 return acc;
             }, {});
 
-            if (filteredAppointments.length === 0) {
-                 adminAppointmentList.innerHTML = '<p class="text-gray-500 text-lg p-6 bg-white rounded-xl shadow-inner">Belum ada permintaan janji temu hari ini.</p>';
+            if (activeAppointments.length === 0) {
+                 adminAppointmentList.innerHTML = '<p class="text-gray-500 text-lg p-6 bg-white rounded-xl shadow-inner">Tidak ada janji temu yang memerlukan tindakan.</p>';
                  return;
             }
 
@@ -840,8 +1013,7 @@
                 categoryDiv.innerHTML = `<h3 class="text-xl font-extrabold text-indigo-700 mb-4 border-b pb-2">Kategori: ${category} (${grouped[category].length})</h3>`;
                 
                 grouped[category].sort((a, b) => a.timeslot.localeCompare(b.timeslot)).forEach((app) => {
-                    const statusClass = app.status === 'approved' ? 'bg-indigo-50 border-indigo-400' : 
-                                        (app.status === 'rejected' ? 'bg-red-50 border-red-400' : 'bg-amber-50 border-amber-400');
+                    const statusClass = app.status === 'approved' ? 'bg-indigo-50 border-indigo-400' : 'bg-amber-50 border-amber-400';
                     
                     const appDiv = document.createElement('div');
                     appDiv.className = `p-4 border-l-4 ${statusClass} rounded-lg mb-3 shadow-sm`;
@@ -858,24 +1030,40 @@
                                 </button>
                             </div>
                         `;
-                    } else {
+                    } else if (app.status === 'approved') {
+                         let statusText, actionButton;
+                         statusText = `<p class="text-sm font-semibold text-indigo-600">Status: DISETUJUI</small>`;
+                         actionButton = `
+                         <button class="admin-action-btn py-1 px-3 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg transition-colors" data-appid="${app.id}" data-action="open-followup">
+                             📝 Beri Tindak Lanjut
+                         </button>`;
+                         
                          buttonsHTML = `<div class="flex items-center space-x-3 mt-2">
-                            <p class="text-sm font-semibold ${app.status === 'approved' ? 'text-indigo-600' : 'text-red-600'}">Status: ${app.status.toUpperCase()}</p>
-                            ${app.status === 'approved' ? `
-                            <button class="admin-action-btn py-1 px-3 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg transition-colors" data-appid="${app.id}" data-action="finish">
-                                ✔️ Selesai
-                            </button>` : ''}
-                            ${app.status === 'rejected' ? `
-                            <button class="admin-action-btn py-1 px-3 bg-gray-500 hover:bg-gray-600 text-white text-xs font-semibold rounded-lg transition-colors" data-appid="${app.id}" data-action="delete">
-                                🗑️ Hapus
-                            </button>` : ''}
+                            ${statusText}
+                            ${actionButton}
                          </div>`;
                     }
+                    
+                    const dateInfo = (app.status === 'approved' && app.date !== today)
+                        ? `<span class="text-xs font-medium text-red-600 bg-red-100 px-2 py-0.5 rounded-full">dari ${new Date(app.date).toLocaleDateString('id-ID')}</span>`
+                        : '';
 
                     appDiv.innerHTML = `
-                        <p class="font-bold text-lg">${app.timeslot} | ${app.studentname} (dengan ${app.teachername})</p>
+                        <div class="flex justify-between items-center">
+                            <p class="font-bold text-lg">${app.timeslot} | ${app.studentname}</p>
+                            ${dateInfo}
+                        </div>
                         <p class="text-sm text-gray-700 italic">Detail: ${app.reason}</p>
                         ${buttonsHTML}
+                        <!-- Form Tindak Lanjut (Inline, disembunyikan) -->
+                        <div class="followup-form-container hidden mt-4 space-y-2" data-form-for-id="${app.id}">
+                            <label class="block text-sm font-medium text-gray-700">Catatan Tindak Lanjut untuk ${app.studentname}:</label>
+                            <textarea class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500" rows="3" placeholder="Tulis apa yang harus dilakukan siswa..."></textarea>
+                            <div class="flex space-x-2">
+                                <button class="admin-action-btn py-1 px-2 bg-green-600 hover:bg-green-700 text-white text-xs font-semibold rounded-lg" data-action="save-followup" data-appid="${app.id}">Simpan Catatan</button>
+                                <button class="admin-action-btn py-1 px-2 bg-gray-400 hover:bg-gray-500 text-white text-xs font-semibold rounded-lg" data-action="cancel-followup" data-appid="${app.id}">Batal</button>
+                            </div>
+                        </div>
                     `;
                     categoryDiv.appendChild(appDiv);
                 });
@@ -886,7 +1074,9 @@
                 btn.addEventListener('click', (e) => {
                     const appId = e.currentTarget.dataset.appid;
                     const action = e.currentTarget.dataset.action;
-                    const app = localAppointmentsCache.find(a => a.id == appId);
+                    
+                    // Kita perlu data 'app' lagi, cari di array 'activeAppointments'
+                    const app = activeAppointments.find(a => a.id == appId);
 
                     if (action === 'approved' || action === 'rejected') {
                         const actionText = action === 'approved' ? 'menyetujui' : 'menolak';
@@ -897,18 +1087,27 @@
                             () => handleAdminAction(appId, action),
                             btnClass
                         );
-                    } else if (action === 'finish') {
-                         showGenericConfirmation(
-                            'Selesaikan Janji Temu',
-                            `Menyelesaikan janji temu dengan **${app.studentname}** akan menghapus riwayat ini dan membuka kembali slot waktu. Lanjutkan?`,
-                            () => handleFinishAppointment(appId),
-                            'bg-blue-600 hover:bg-blue-700'
-                        );
+                    } else if (action === 'open-followup') {
+                        const formContainer = e.currentTarget.closest('.p-4').querySelector('.followup-form-container');
+                        formContainer.classList.remove('hidden');
+                        formContainer.querySelector('textarea').focus();
+                    } else if (action === 'cancel-followup') {
+                        const formContainer = e.currentTarget.closest('.followup-form-container');
+                        formContainer.classList.add('hidden');
+                        formContainer.querySelector('textarea').value = '';
+                    } else if (action === 'save-followup') {
+                        const formContainer = e.currentTarget.closest('.followup-form-container');
+                        const note = formContainer.querySelector('textarea').value.trim();
+                        if (!note) {
+                            showAlert('Catatan tindak lanjut tidak boleh kosong.', 'error');
+                            return;
+                        }
+                        handleSaveFollowup(appId, note);
                     } else if (action === 'delete') {
-                        showGenericConfirmation(
+                         showGenericConfirmation(
                             'Hapus Riwayat Janji Temu',
-                            `Yakin ingin menghapus riwayat janji temu yang ditolak untuk **${app.studentname}**?`,
-                            () => handleDeleteAppointmentHistory(appId),
+                            `Yakin ingin menghapus riwayat janji temu untuk **${app.studentname}**?`,
+                            () => handleDeleteAppointmentHistory(appId, 'admin'), // tambahkan role
                             'bg-gray-600 hover:bg-gray-700'
                         );
                     }
@@ -916,44 +1115,144 @@
             });
         }
         
+        async function renderStudentHistory(searchTerm = '') {
+            const listContainer = document.getElementById('student-history-list');
+            listContainer.innerHTML = '';
+            searchTerm = searchTerm.toLowerCase();
+
+            // 1. Ambil data dari Supabase
+            const { data: allMyApps, error } = await supabaseClient
+                .from('appointments')
+                .select('*')
+                .eq('teachername', currentUser)
+                .in('status', ['rejected', 'completed']); // Hanya ambil yg 'rejected' atau 'completed'
+
+            if (error) {
+                showAlert(`Gagal memuat riwayat: ${error.message}`, 'error');
+                return;
+            }
+
+            // 2. Kelompokkan berdasarkan nama siswa
+            const groupedByStudent = allMyApps.reduce((acc, app) => {
+                const student = app.studentname;
+                if (!acc[student]) acc[student] = [];
+                acc[student].push(app);
+                return acc;
+            }, {});
+
+            // 3. Filter siswa berdasarkan nama
+            const filteredStudentNames = Object.keys(groupedByStudent).filter(name => 
+                name.toLowerCase().includes(searchTerm)
+            ).sort();
+
+            if (filteredStudentNames.length === 0) {
+                if (searchTerm) {
+                    listContainer.innerHTML = `<p class="text-gray-500 text-center p-4">Tidak ditemukan siswa dengan nama "<strong>${searchTerm}</strong>".</p>`;
+                } else {
+                    listContainer.innerHTML = `<p class="text-gray-500 text-center p-4">Belum ada riwayat siswa.</p>`;
+                }
+                return;
+            }
+
+            // 4. Render daftar siswa
+            filteredStudentNames.forEach(studentName => {
+                const appointments = groupedByStudent[studentName].sort((a, b) => new Date(b.date) - new Date(a.date));
+                
+                const detailsElement = document.createElement('details');
+                detailsElement.className = 'bg-white shadow-md rounded-xl border border-gray-200 transition-all duration-300 open:shadow-xl';
+                
+                let summaryHTML = `
+                    <summary class="p-4 font-semibold text-lg text-gray-800 cursor-pointer list-none flex justify-between items-center hover:bg-gray-50 rounded-t-xl">
+                        <span>${studentName}</span>
+                        <span class="text-sm font-medium text-gray-500 bg-gray-100 px-3 py-1 rounded-full">${appointments.length} Sesi</span>
+                    </summary>
+                `;
+                
+                let appointmentsHTML = '<div class="p-4 border-t border-gray-200 space-y-3 bg-gray-50/50 rounded-b-xl">';
+                
+                appointments.forEach(app => {
+                    let statusClass, statusText;
+                    switch (app.status) {
+                        case 'rejected': statusClass = 'text-red-700 bg-red-100 border-red-300'; statusText = 'Ditolak'; break;
+                        case 'completed': statusClass = 'text-blue-700 bg-blue-100 border-blue-300'; statusText = 'Selesai'; break;
+                        default: statusClass = 'text-gray-700 bg-gray-100 border-gray-300'; statusText = 'Lainnya'; break;
+                    }
+                    
+                    const appDate = new Date(app.date).toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' });
+                    
+                    appointmentsHTML += `
+                        <div class="p-3 bg-white rounded-lg border border-gray-200 shadow-sm">
+                            <div class="flex justify-between items-center mb-1">
+                                <p class="font-semibold text-gray-800">${app.timeslot} - ${appDate}</p>
+                                <span class="text-xs font-bold px-2 py-0.5 rounded-full border ${statusClass}">${statusText}</span>
+                            </div>
+                            <p class="text-sm text-gray-600">Kategori: ${app.category}</p>
+                            ${app.reason ? `<p class="text-sm text-gray-600 italic">Keluhan: ${app.reason}</p>` : ''}
+                            
+                            ${app.followupnote ? `
+                                <div class="mt-2 pt-2 border-t border-gray-200">
+                                    <p class="text-sm text-gray-600 font-semibold">Catatan Tindak Lanjut:</p>
+                                    <p class="text-sm text-gray-800 whitespace-pre-wrap bg-blue-50 p-2 rounded">${app.followupnote}</p>
+                                </div>
+                            ` : ''}
+                        </div>
+                    `;
+                });
+                
+                appointmentsHTML += '</div>';
+                detailsElement.innerHTML = summaryHTML + appointmentsHTML;
+                listContainer.appendChild(detailsElement);
+            });
+        }
+        
         async function handleAdminAction(appId, status) {
-            const app = localAppointmentsCache.find(a => a.id == appId);
+            const app = (await supabaseClient.from('appointments').select('*').eq('id', appId).single()).data;
 
             if (status === 'approved') {
-                const conflictExists = localAppointmentsCache.some(otherApp => 
-                    otherApp.id != appId &&
-                    otherApp.teachername === app.teachername &&
-                    otherApp.timeslot === app.timeslot &&
-                    otherApp.status === 'approved' &&
-                    new Date(otherApp.date).toDateString() === new Date(app.date).toDateString()
-                );
-                if (conflictExists) {
+                const { data: conflictExists, error } = await supabaseClient
+                    .from('appointments')
+                    .select('id')
+                    .eq('teachername', app.teachername)
+                    .eq('timeslot', app.timeslot)
+                    .eq('status', 'approved')
+                    .eq('date', app.date)
+                    .neq('id', appId); // Cek selain id ini
+                
+                if (error) {
+                    showAlert(`Error cek konflik: ${error.message}`, 'error'); return;
+                }
+                if (conflictExists.length > 0) {
                     showAlert('**Gagal disetujui!** Slot waktu tersebut sudah terisi. Mohon tolak permintaan ini.', 'error');
                     return;
                 }
             }
             
-            const { error } = await supabaseClient.from('appointments').update({ status: status }).eq('id', appId);
+            const { error: updateError } = await supabaseClient
+                .from('appointments')
+                .update({ status: status })
+                .eq('id', appId);
 
-            if (error) {
-                showAlert('Gagal mengubah status janji temu.', 'error');
+            if (updateError) {
+                showAlert(`Gagal update: ${updateError.message}`, 'error');
             } else {
-                app.status = status;
                 renderAdminAppointments();
                 showAlert(`Janji temu berhasil diubah menjadi: **${status.toUpperCase()}**.`, 'success');
             }
         }
         
-        async function handleFinishAppointment(appId) {
-            const app = localAppointmentsCache.find(a => a.id == appId);
-            const { error } = await supabaseClient.from('appointments').delete().eq('id', appId);
+        async function handleSaveFollowup(appId, note) {
+            const { data: app, error } = await supabaseClient
+                .from('appointments')
+                .update({ status: 'completed', followupnote: note })
+                .eq('id', appId)
+                .select('studentname') // Ambil studentname setelah update
+                .single();
 
             if (error) {
-                showAlert('Gagal menyelesaikan janji temu.', 'error');
-            } else {
-                localAppointmentsCache = localAppointmentsCache.filter(a => a.id != appId);
-                renderAdminAppointments();
-                showAlert(`Janji temu dengan **${app.studentname}** telah selesai.`, 'success');
+                showAlert(`Gagal menyimpan catatan: ${error.message}`, 'error');
+            } else if (app) {
+                renderAdminAppointments(); // Render ulang tampilan admin
+                showAlert(`Catatan tindak lanjut untuk **${app.studentname}** telah disimpan.`, 'success');
             }
         }
 
@@ -966,31 +1265,46 @@
                 return;
             }
 
-            const { data, error } = await supabaseClient.from('articles')
-                .insert([{ title: title, content: content, author: currentUser }])
-                .select();
+            const newArticle = {
+                title: title,
+                content: content,
+                author: currentUser
+            };
 
+            const { error } = await supabaseClient.from('articles').insert(newArticle);
+            
             if (error) {
-                showAlert('Gagal menyimpan materi.', 'error');
+                showAlert(`Gagal menyimpan artikel: ${error.message}`, 'error');
             } else {
-                localArticlesCache.push(data[0]);
                 document.getElementById('article-title-input').value = '';
                 document.getElementById('article-content-input').value = '';
                 showAlert('Materi motivasi baru berhasil ditambahkan!', 'success');
+                renderArticles();
             }
         }
         
         // --- Super Admin Functions ---
 
-        function renderAllAccounts() {
+        async function renderAllAccounts() {
             const adminAccountsList = document.getElementById('admin-accounts-list');
             const studentAccountsList = document.getElementById('student-accounts-list');
 
             adminAccountsList.innerHTML = '';
             studentAccountsList.innerHTML = '';
 
-            const adminUsers = localUsersCache.filter(u => u.role === 'admin').sort((a, b) => a.name.localeCompare(b.name));
-            const studentUsers = localUsersCache.filter(u => u.role === 'user').sort((a, b) => a.name.localeCompare(b.name));
+            const { data: users, error } = await supabaseClient
+                .from('users')
+                .select('*')
+                .neq('role', 'superadmin') // Jangan tampilkan superadmin
+                .order('name', { ascending: true });
+
+            if (error) {
+                showAlert(`Gagal memuat akun: ${error.message}`, 'error');
+                return;
+            }
+
+            const adminUsers = users.filter(u => u.role === 'admin');
+            const studentUsers = users.filter(u => u.role === 'user');
 
             const createListItem = (user) => {
                 let roleText = user.role === 'admin' ? 'Guru BK' : 'Siswa';
@@ -1013,7 +1327,7 @@
                         <p class="font-medium text-gray-800">${user.name}</p>
                         <p class="text-xs font-semibold px-2 py-0.5 rounded-full inline-block ${roleClass}">${roleText}</p>
                     </div>
-                    ${(user.name.toLowerCase() !== currentUser.toLowerCase()) ? actionButtonsHTML : ''}
+                    ${actionButtonsHTML}
                 `;
                 return userDiv;
             };
@@ -1025,7 +1339,7 @@
                 btn.addEventListener('click', (e) => {
                     const userId = e.target.dataset.userid;
                     const userName = e.target.dataset.username;
-                    showGenericConfirmation('Hapus Akun', `Anda yakin ingin **menghapus permanen** akun **${userName}**?`, () => handleDeleteAccountBySuperAdmin(userId, userName));
+                    showGenericConfirmation('Hapus Akun', `Anda yakin ingin **menghapus permanen** akun **${userName}**? (Semua janji temunya juga akan terhapus)`, () => handleDeleteAccountBySuperAdmin(userId, userName));
                 });
             });
 
@@ -1045,13 +1359,31 @@
             const newRole = roleSelect.value;
 
             if (!newName) return showAlert('Nama pengguna tidak boleh kosong.', 'error');
-            if (localUsersCache.some(u => u.name.toLowerCase() === newName.toLowerCase())) return showAlert(`Akun dengan nama **${newName}** sudah ada.`, 'error');
+            
+            // Cek apakah nama sudah ada
+            const { data: existingUser, error: checkError } = await supabaseClient
+                .from('users')
+                .select('id')
+                .eq('name', newName)
+                .single();
 
-            const { data, error } = await supabaseClient.from('users').insert([{ name: newName, role: newRole, password: DEFAULT_ACCOUNT_PASSWORD }]).select();
+            if (checkError && checkError.code !== 'PGRST116') { // PGRST116 = Not found, which is good
+                 showAlert(`Error: ${checkError.message}`, 'error');
+                 return;
+            }
+            if (existingUser) return showAlert(`Akun dengan nama **${newName}** sudah ada.`, 'error');
 
-            if (error) showAlert('Gagal membuat akun.', 'error');
-            else {
-                localUsersCache.push(data[0]);
+            const newUser = {
+                name: newName,
+                role: newRole,
+                password: DEFAULT_ACCOUNT_PASSWORD
+            };
+            
+            const { error: insertError } = await supabaseClient.from('users').insert(newUser);
+            
+            if (insertError) {
+                showAlert(`Gagal buat akun: ${insertError.message}`, 'error');
+            } else {
                 nameInput.value = '';
                 renderAllAccounts();
                 showAlert(`Akun **${newName}** berhasil dibuat.`, 'success');
@@ -1059,26 +1391,40 @@
         }
 
         async function handleDeleteAccountBySuperAdmin(userId, userName) {
-            const { error } = await supabaseClient.from('users').delete().eq('id', userId);
+            // Hapus janji temu siswa terlebih dahulu
+            const { error: appError } = await supabaseClient
+                .from('appointments')
+                .delete()
+                .eq('studentname', userName);
+            
+            if (appError) {
+                showAlert(`Gagal hapus janji temu: ${appError.message}`, 'error');
+                return;
+            }
 
-            if (error) showAlert('Gagal menghapus akun.', 'error');
-            else {
-                localUsersCache = localUsersCache.filter(u => u.id != userId);
-                // Also delete their appointments
-                await supabaseClient.from('appointments').delete().eq('studentname', userName);
-                localAppointmentsCache = localAppointmentsCache.filter(a => a.studentname !== userName);
+            // Hapus pengguna
+            const { error: userError } = await supabaseClient
+                .from('users')
+                .delete()
+                .eq('id', userId);
+            
+             if (userError) {
+                showAlert(`Gagal hapus akun: ${userError.message}`, 'error');
+            } else {
                 renderAllAccounts();
                 showAlert(`Akun **${userName}** berhasil dihapus.`, 'success');
             }
         }
 
         async function handleResetPasswordBySuperAdmin(userId, userName) {
-            const { error } = await supabaseClient.from('users').update({ password: DEFAULT_ACCOUNT_PASSWORD }).eq('id', userId);
+            const { error } = await supabaseClient
+                .from('users')
+                .update({ password: DEFAULT_ACCOUNT_PASSWORD })
+                .eq('id', userId);
 
-            if (error) showAlert('Gagal mereset sandi.', 'error');
-            else {
-                const user = localUsersCache.find(u => u.id == userId);
-                if (user) user.password = DEFAULT_ACCOUNT_PASSWORD;
+            if (error) {
+                showAlert(`Gagal reset sandi: ${error.message}`, 'error');
+            } else {
                 showAlert(`Sandi untuk akun **${userName}** telah direset.`, 'success');
             }
         }
@@ -1086,49 +1432,69 @@
         // --- Authentication & Initialization ---
 
         async function handleLogin(name, password, role) {
-            const { data, error } = await supabaseClient
+            // PERINGATAN KEAMANAN: Ini sangat tidak aman!
+            // Kita mencari password sebagai teks biasa.
+            // Di aplikasi nyata, gunakan Supabase Auth.
+            const { data: user, error } = await supabaseClient
                 .from('users')
-                .select('*')
+                .select('id, name, password, role')
                 .eq('name', name)
                 .eq('password', password)
                 .eq('role', role)
-                .single(); // .single() expects one result or throws error
+                .single(); // Ambil satu
 
-            if (data && !error) {
-                currentUser = data.name;
-                currentRole = data.role;
+            if (error || !user) {
+                showAlert('Nama pengguna atau password salah.', 'error');
+                return;
+            }
+
+            if (user) {
+                currentUser = user.name;
+                currentUserId = user.id; // Simpan ID
+                currentRole = user.role;
+                
+                loadingOverlay.classList.remove('hidden'); // Tampilkan loader
                 
                 if (currentRole === 'user') {
                     studentNameHeader.textContent = currentUser;
+                    await initializeUserDashboard();
                     showView('user-dashboard-view');
-                    initializeUserDashboard();
                 } else if (currentRole === 'admin') {
                     adminNameHeader.textContent = currentUser;
+                    await initializeAdminDashboard();
                     showView('admin-dashboard-view');
-                    initializeAdminDashboard();
                 } else if (currentRole === 'superadmin') {
                     superAdminNameHeader.textContent = currentUser;
+                    await initializeSuperAdminDashboard();
                     showView('super-admin-dashboard-view');
-                    initializeSuperAdminDashboard();
                 }
-            } else {
-                showAlert('Nama pengguna atau password salah.', 'error');
+                
+                loadingOverlay.classList.add('hidden'); // Sembunyikan loader
             }
         }
         
         async function handleUpdatePassword(oldPassword, newPassword, confirmPassword) {
-            const user = localUsersCache.find(u => u.name === currentUser);
+            // Ambil data pengguna saat ini untuk memverifikasi password lama
+            const { data: user, error: fetchError } = await supabaseClient
+                .from('users')
+                .select('password')
+                .eq('name', currentUser)
+                .single();
             
+            if (fetchError || !user) return showAlert('Pengguna tidak ditemukan.', 'error');
             if (user.password !== oldPassword) return showAlert('Password lama Anda salah.', 'error');
             if (newPassword.length < 4) return showAlert('Password baru minimal harus 4 karakter.', 'error');
             if (newPassword !== confirmPassword) return showAlert('Konfirmasi password tidak cocok.', 'error');
             
-            const { error } = await supabaseClient.from('users').update({ password: newPassword }).eq('name', currentUser);
-
-            if (error) {
-                showAlert('Gagal memperbarui password.', 'error');
+            // Update password di Supabase
+            const { error: updateError } = await supabaseClient
+                .from('users')
+                .update({ password: newPassword })
+                .eq('name', currentUser);
+            
+            if (updateError) {
+                showAlert(`Gagal update password: ${updateError.message}`, 'error');
             } else {
-                user.password = newPassword;
                 showAlert('Password berhasil diperbarui.', 'success');
                 // Clear inputs based on role
                 if(currentRole === 'admin') {
@@ -1148,11 +1514,12 @@
             hideGenericConfirmation();
             hideAlert();
             currentUser = null;
+            currentUserId = null;
             currentRole = null;
             showView('login-view');
         }
 
-        function initializeUserDashboard() {
+        async function initializeUserDashboard() {
             document.getElementById('chat-gofar-btn').href = `https://wa.me/${gofarNumber}?text=Halo%20Bapak%20Gofar,%20saya%20${currentUser}.%20Saya%20perlu%20konsultasi.`;
             document.getElementById('chat-rohman-btn').href = `https://wa.me/${rohmanNumber}?text=Halo%20Bapak%20Rohman,%20saya%20${currentUser}.%20Saya%20perlu%20konsultasi.`;
 
@@ -1165,12 +1532,16 @@
             });
             document.getElementById('tab-appointment').classList.add('bg-white', 'shadow-sm', 'text-blue-600', 'font-semibold');
             
-            renderAppointmentSlots();
-            renderMyAppointments();
-            renderArticles();
+            // Muat semua data secara paralel
+            await Promise.all([
+                renderAppointmentSlots(),
+                renderMyAppointments(),
+                renderArticles(),
+                renderFollowupNotes()
+            ]);
         }
         
-        function initializeAdminDashboard() {
+        async function initializeAdminDashboard() {
             document.querySelectorAll('#admin-dashboard-view .tab-content').forEach(el => el.classList.add('hidden'));
             document.getElementById('admin-content-appointments').classList.remove('hidden');
              document.querySelectorAll('#admin-dashboard-view button[id^="admin-tab-"]').forEach(btn => {
@@ -1178,11 +1549,11 @@
                 btn.classList.add('text-gray-600', 'hover:bg-white', 'hover:shadow-sm', 'font-medium');
             });
             document.getElementById('admin-tab-appointments').classList.add('bg-white', 'shadow-sm', 'text-blue-600', 'font-semibold');
-            renderAdminAppointments();
+            await renderAdminAppointments();
         }
         
-        function initializeSuperAdminDashboard() {
-            renderAllAccounts();
+        async function initializeSuperAdminDashboard() {
+            await renderAllAccounts();
         }
         
         // --- Event Listeners ---
@@ -1235,6 +1606,10 @@
                 document.querySelectorAll('#admin-dashboard-view .tab-content').forEach(el => el.classList.add('hidden'));
                 document.getElementById(targetId).classList.remove('hidden');
 
+                if (targetId === 'admin-content-history') {
+                    renderStudentHistory();
+                }
+                
                 document.querySelectorAll('#admin-dashboard-view button[id^="admin-tab-"]').forEach(b => {
                     b.classList.remove('bg-white', 'shadow-sm', 'text-blue-600', 'font-semibold');
                     b.classList.add('text-gray-600', 'hover:bg-white', 'hover:shadow-sm', 'font-medium');
@@ -1243,9 +1618,15 @@
             });
         });
 
-        bookingModalCancelBtn.addEventListener('click', hideBookingConfirmation);
-        bookingModalConfirmBtn.addEventListener('click', confirmAppointment);
+        bookingFormCancelBtn.addEventListener('click', hideBookingConfirmation);
+        bookingFormConfirmBtn.addEventListener('click', confirmAppointment);
+        
         alertOkBtn.addEventListener('click', hideAlert);
+        
+        document.getElementById('student-search-input').addEventListener('input', (e) => {
+            renderStudentHistory(e.target.value);
+        });
+        
         document.getElementById('save-article-btn').addEventListener('click', handleSaveArticle);
         createNewAccountBtn.addEventListener('click', handleCreateAccount);
         document.getElementById('update-password-btn').addEventListener('click', () => {
@@ -1262,15 +1643,20 @@
         });
         
         // --- Initial App Load ---
-        async function initializeApp() {
+        function initializeApp() {
+            // Cek kunci supabase dulu, jika tidak ada, jangan lanjutkan
+            if (SUPABASE_URL === 'https://MASUKKAN_URL_ANDA.supabase.co') {
+                return; // Berhenti di sini, pesan error sudah ditampilkan
+            }
+
             loadingOverlay.classList.remove('hidden');
             appContainer.classList.add('hidden');
 
-            await fetchAllData();
-
-            loadingOverlay.classList.add('hidden');
-            appContainer.classList.remove('hidden');
-            showView('login-view');
+            setTimeout(() => {
+                loadingOverlay.classList.add('hidden');
+                appContainer.classList.remove('hidden');
+                showView('login-view');
+            }, 500);
         }
 
         initializeApp();
@@ -1278,4 +1664,3 @@
     </script>
 </body>
 </html>
-
